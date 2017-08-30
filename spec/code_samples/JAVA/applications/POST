@@ -1,5 +1,0 @@
-HttpResponse<String> response = Unirest.post("http://preprod.api.datatiger.com/applications")
-  .header("accept", "application/json")
-  .header("content-type", "application/json")
-  .body("{\"name\":\"<ADD STRING VALUE>\"}")
-  .asString();

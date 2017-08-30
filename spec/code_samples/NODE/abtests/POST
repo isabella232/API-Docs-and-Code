@@ -1,0 +1,29 @@
+var unirest = require("unirest");
+
+var req = unirest("POST", "http://preprod.api.datatiger.com/applications/%7Bapplication%7D/abtests");
+
+req.headers({
+  "content-type": "application/json",
+  "accept": "application/json"
+});
+
+req.type("json");
+req.send({
+  "name": "<ADD STRING VALUE>",
+  "description": "<ADD STRING VALUE>",
+  "application": "<ADD STRING VALUE>",
+  "seed": "<ADD STRING VALUE>",
+  "controlGroupSize": 0,
+  "testGroups": [
+    {
+      "name": "<ADD STRING VALUE>",
+      "size": 0
+    }
+  ]
+});
+
+req.end(function (res) {
+  if (res.error) throw new Error(res.error);
+
+  console.log(res.body);
+});

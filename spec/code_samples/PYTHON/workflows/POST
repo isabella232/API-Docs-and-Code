@@ -1,0 +1,17 @@
+import http.client
+
+conn = http.client.HTTPConnection("preprod.api.datatiger.com")
+
+payload = "{\"name\":\"<ADD STRING VALUE>\",\"application\":\"<ADD STRING VALUE>\",\"startsOn\":\"<ADD STRING VALUE>\",\"endsOn\":\"<ADD STRING VALUE>\",\"status\":\"ACTIVE\",\"triggerExpression\":\"<ADD STRING VALUE>\",\"abTest\":\"<ADD STRING VALUE>\",\"steps\":{}}"
+
+headers = {
+    'accept': "application/json",
+    'content-type': "application/json"
+    }
+
+conn.request("POST", "/applications/%7Bapplication%7D/workflows", payload, headers)
+
+res = conn.getresponse()
+data = res.read()
+
+print(data.decode("utf-8"))

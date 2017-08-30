@@ -1,0 +1,6 @@
+HttpResponse<String> response = Unirest.post("http://preprod.api.datatiger.com/events")
+  .header("accept", "application/json")
+  .header("content-type", "application/json")
+  .header("x-api-key", "SOME_STRING_VALUE")
+  .body("{\"userId\":\"<ADD STRING VALUE>\",\"events\":[{\"UserId\":\"<ADD STRING VALUE>\",\"AppId\":\"<ADD STRING VALUE>\",\"EventType\":\"<ADD STRING VALUE>\",\"Version\":\"<ADD STRING VALUE>\",\"CreatedOn\":0,\"User\":{\"UserId\":\"<ADD STRING VALUE>\",\"AppId\":\"<ADD STRING VALUE>\",\"Version\":\"<ADD STRING VALUE>\"}}]}")
+  .asString();

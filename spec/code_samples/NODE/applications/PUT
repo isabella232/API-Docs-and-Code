@@ -1,0 +1,15 @@
+var unirest = require("unirest");
+
+var req = unirest("PUT", "http://preprod.api.datatiger.com/applications/%7Bapplication%7D");
+
+req.headers({
+  "content-type": "application/json",
+  "accept": "application/json"
+});
+
+
+req.end(function (res) {
+  if (res.error) throw new Error(res.error);
+
+  console.log(res.body);
+});

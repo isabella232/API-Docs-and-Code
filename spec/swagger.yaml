@@ -941,6 +941,7 @@ definitions:
       - ACTION
       - CONDITION
       - WAIT
+      - SENDGRID_EMAIL_ACTION
 
   ExpressionType:
     type: string
@@ -1019,7 +1020,7 @@ definitions:
     type: object
     description: |
       Generic workflow step definition for all types of steps. The 'concrete' definitions should
-      be one of: START, ACTION, TERMINAL and CONDITION. These extend this definition by adding
+      be one of: START, ACTION, SENDGRID_EMAIL_ACTION, TERMINAL and CONDITION. These extend this definition by adding
       extra properties when necessary.
     discriminator: type
     required:

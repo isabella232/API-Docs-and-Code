@@ -284,13 +284,6 @@ paths:
           required: true
           schema:
             "$ref": '#/definitions/CreateApplicationType'
-          x-examples:
-            testAppExample: 
-              summary: Create an application named 'testApp'
-              value: |-
-                {
-                   "name":"testApp"
-                } 
       responses:
         201:
           description: The application was created succesfully

@@ -15,24 +15,18 @@ info:
   description: |
 
 
-    # General concepts
-    * Identifiers: All managed objects can be uniquelly identified by a plaform generated identifier.
-    This is returned when an object is created or whenever it is retrieved from the databse.
-    * Versioning: Workflows are immutable entities so to making changes to a workflow requires the creation of a new version. This ensures a well defined execution model
-    for cases where e.g. a workflow is modified while it is executing. As a result, the new version has its own identifier. The old identifier will now refer to an 'outdated' entry.
-
     # Authentication
-    DataTiger offers offers the following form of authentication:
-      - API Key
-
-
+    All requests must be authenticated using an API key. Each event endpoint is associated with an API key, that is created during deployment (and can also be updated later on). 
+    
+    The api is provided using the x-api-key header:
+    ```
+      x-api-key: <TokenString>
+    ```
 
   version: "1.0.0"
 
-
-
-host: 6f92bwvk0k.execute-api.eu-west-1.amazonaws.com/LATEST
-basePath: /
+host: f92bwvk0k.execute-api.eu-west-1.amazonaws.com
+basePath: /LATEST
 schemes:
   - https
 
@@ -72,16 +66,12 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: x-api-key
-          in: header
-          required: true
-          type: string
-          description: The API key for this endpoint
         - name: body
           in: body
           required: true
           schema:
             "$ref": '#/definitions/EventBatchType'
+        - "$ref": "#/parameters/authParam"
       responses:
         200:
           description: The event was consumed
@@ -181,5 +171,13 @@ definitions:
     type: number
     format: int64
 
+parameters:
+  ###Authentication
+    authParam:
+        name: x-api-key
+        in: header
+        required: true
+        type: string
+        description: The API key for this endpoint
 
 

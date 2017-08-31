@@ -204,7 +204,6 @@ paths:
         - applications
       operationId: getApplications
       parameters:
-        - "$ref": "#/parameters/authParam"
         - "$ref": "#/parameters/nameFilter"
         - "$ref": "#/parameters/IdFilter"
         - "$ref": "#/parameters/pagingPageParam"

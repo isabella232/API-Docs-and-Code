@@ -29,7 +29,9 @@ info:
       - Username/Password
       
     As Swager 2.0 specification cannot properly describe these authentication schemes, please use this description as reference on how the authentication works.    
-    In the following sections that describe the requests, all requests that require authentication will be tagged with the 'ApiKeyAuth' security definition.  
+    
+    In the following sections that describe the requests, all requests that require authentication will have an optional 'Authorization' header. The API user can either 
+    use this header for API token authentication or an authenticated HTTP session for username/password authentication.     
       
       
     ## API Key authentication
@@ -189,6 +191,8 @@ paths:
 
   /applications:
 
+    parameters:
+      - "$ref": "#/parameters/authParam"
 
 ###Get applications 
     get:
@@ -198,10 +202,9 @@ paths:
         List all the applications 
       tags:
         - applications
-      security:
-        - ApiKeyAuth: []
       operationId: getApplications
       parameters:
+        - "$ref": "#/parameters/authParam"
         - "$ref": "#/parameters/nameFilter"
         - "$ref": "#/parameters/IdFilter"
         - "$ref": "#/parameters/pagingPageParam"
@@ -326,6 +329,8 @@ paths:
   /applications/{application}:
     parameters:
         - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/authParam"
+        
 ###Update an existing application
     put:
       summary: Updates an application
@@ -398,6 +403,7 @@ paths:
   /applications/{application}/abtests:
     parameters:
       - "$ref": "#/parameters/applicationParam"
+      - "$ref": "#/parameters/authParam"
 
     get:
       summary: Get the AB tests of an application
@@ -482,6 +488,7 @@ paths:
     parameters:
       - "$ref": "#/parameters/applicationParam"
       - "$ref": "#/parameters/abTestParam"
+      - "$ref": "#/parameters/authParam"
 
     get:
       summary: Get an AB test
@@ -519,6 +526,7 @@ paths:
   /applications/{application}/workflows:
     parameters:
       - "$ref": "#/parameters/applicationParam"
+      - "$ref": "#/parameters/authParam"
 
 #### getWorkflowsOfApplication
     get:
@@ -637,6 +645,7 @@ paths:
     parameters:
         - "$ref": "#/parameters/applicationParam"
         - "$ref": "#/parameters/workflowParam"
+        - "$ref": "#/parameters/authParam"
     put:
       summary: Updates a workflow, by creating a new version.
       description: |
@@ -1148,6 +1157,14 @@ definitions:
 ##################################################################################
 
 parameters:
+###Authenticatiokn
+    authParam:
+        name: Authorization
+        in: header
+        required: false
+        type: string
+        description: Bearer <API_Token>. Include this for API Token authentication
+
 
 ###Path parameters
     applicationParam:
@@ -1291,9 +1308,3 @@ parameters:
 
 
 
-securityDefinitions:
-  ApiKeyAuth:
-    type: apiKey
-    description: API key 
-    name: Authorization
-    in: header

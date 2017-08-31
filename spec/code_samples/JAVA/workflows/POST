@@ -1,0 +1,5 @@
+HttpResponse<String> response = Unirest.post("http://preprod.api.datatiger.com/applications/%7Bapplication%7D/workflows")
+  .header("accept", "application/json")
+  .header("content-type", "application/json")
+  .body("{\"name\":\"<ADD STRING VALUE>\",\"application\":\"<ADD STRING VALUE>\",\"startsOn\":\"<ADD STRING VALUE>\",\"endsOn\":\"<ADD STRING VALUE>\",\"status\":\"ACTIVE\",\"triggerExpression\":\"<ADD STRING VALUE>\",\"abTest\":\"<ADD STRING VALUE>\",\"steps\":{}}")
+  .asString();

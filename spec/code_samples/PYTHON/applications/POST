@@ -1,0 +1,17 @@
+import http.client
+
+conn = http.client.HTTPConnection("preprod.api.datatiger.com")
+
+payload = "{\"name\":\"<ADD STRING VALUE>\"}"
+
+headers = {
+    'accept': "application/json",
+    'content-type': "application/json"
+    }
+
+conn.request("POST", "/applications", payload, headers)
+
+res = conn.getresponse()
+data = res.read()
+
+print(data.decode("utf-8"))

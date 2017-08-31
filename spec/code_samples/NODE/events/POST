@@ -1,0 +1,34 @@
+var unirest = require("unirest");
+
+var req = unirest("POST", "http://preprod.api.datatiger.com/events");
+
+req.headers({
+  "x-api-key": "SOME_STRING_VALUE",
+  "content-type": "application/json",
+  "accept": "application/json"
+});
+
+req.type("json");
+req.send({
+  "userId": "<ADD STRING VALUE>",
+  "events": [
+    {
+      "UserId": "<ADD STRING VALUE>",
+      "AppId": "<ADD STRING VALUE>",
+      "EventType": "<ADD STRING VALUE>",
+      "Version": "<ADD STRING VALUE>",
+      "CreatedOn": 0,
+      "User": {
+        "UserId": "<ADD STRING VALUE>",
+        "AppId": "<ADD STRING VALUE>",
+        "Version": "<ADD STRING VALUE>"
+      }
+    }
+  ]
+});
+
+req.end(function (res) {
+  if (res.error) throw new Error(res.error);
+
+  console.log(res.body);
+});

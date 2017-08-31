@@ -1,0 +1,26 @@
+var unirest = require("unirest");
+
+var req = unirest("POST", "http://preprod.api.datatiger.com/applications/%7Bapplication%7D/workflows");
+
+req.headers({
+  "content-type": "application/json",
+  "accept": "application/json"
+});
+
+req.type("json");
+req.send({
+  "name": "<ADD STRING VALUE>",
+  "application": "<ADD STRING VALUE>",
+  "startsOn": "<ADD STRING VALUE>",
+  "endsOn": "<ADD STRING VALUE>",
+  "status": "ACTIVE",
+  "triggerExpression": "<ADD STRING VALUE>",
+  "abTest": "<ADD STRING VALUE>",
+  "steps": {}
+});
+
+req.end(function (res) {
+  if (res.error) throw new Error(res.error);
+
+  console.log(res.body);
+});

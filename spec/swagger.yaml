@@ -18,16 +18,32 @@ info:
 
     # General concepts
     * Identifiers: All managed objects can be uniquelly identified by a plaform generated identifier.
-    This is returned when an object is created or whenever it is retrieved from the databse.
-    * Versioning: Workflows are immutable entities so to making changes to a workflow requires the creation of a new version. This ensures a well defined execution model
-    for cases where e.g. a workflow is modified while it is executing. As a result, the new version has its own identifier. The old identifier will now refer to an 'outdated' entry.
+    This is returned when an object is created or whenever it is retrieved from the database.
+
+    * Versioning: Several entities (such as the workflows) are immutable entities, as modifying them can lead to unpredicted behaviour (e.g. modifying a workflow while 
+    it is executing). Updating such an entity results in a new version, with its own unique identifier. 
 
     # Authentication
-    DataTiger offers offers the following form of authentication:
-      - API Key
-
-
-
+    Most requests need to be authenticated. Management API allows two types of authentication:
+      - API Key (Bearer token)
+      - Username/Password
+      
+    As Swager 2.0 specification cannot properly describe these authentication schemes, please use this description as reference on how the authentication works.    
+    In the following sections that describe the requests, all requests that require authentication will be tagged with the 'ApiKeyAuth' security definition.  
+      
+      
+    ## API Key authentication
+    A request can be authenticated using an API token that is (optionally) associated with a user. The 'Authorization' header is used to provide the API token, as follows:
+    ```
+      Authorization: Bearer <TokenString>
+    ```
+    The API token is sufficient to identify and authenticate the user performing the request.
+    
+    ## Username/Password authentication
+    Alternatively, username/password authentication can be used to authenticate an HTTP session by performing a POST to the /account/login endpoint.
+    If the authentication is succesfull, a session cookie is stored and all subsequent requests for the same HTTP session are pre-authenticated.
+    The /account/logout endpoint can be used to de-associate the session with the user.
+    
   version: "1.0.0"
 
 host: preprod.api.datatiger.com
@@ -61,7 +77,8 @@ x-tagGroups:
   - name: Data types
     tags:
       - datatypes      
-     
+
+
 
 paths:
 
@@ -149,18 +166,17 @@ paths:
 ##################################################################################
   /ping:
     get:
-      summary: Check if the server is running
+      summary: Checks if the server is running
       description: |
-        Check if the server is running
+        If the server is up and running the JSON string "pong" is returned.  
       tags:
         - health
-
       operationId: ping
       produces:
         - application/json
       responses:
         200:
-          description: 'pong'
+          description:  If the server is up and running the string "pong" is returned
           schema:
               type: string
 
@@ -182,7 +198,8 @@ paths:
         List all the applications 
       tags:
         - applications
-
+      security:
+        - ApiKeyAuth: []
       operationId: getApplications
       parameters:
         - "$ref": "#/parameters/nameFilter"
@@ -1273,3 +1290,10 @@ parameters:
           - '-name'
 
 
+
+securityDefinitions:
+  ApiKeyAuth:
+    type: apiKey
+    description: API key 
+    name: Authorization
+    in: header

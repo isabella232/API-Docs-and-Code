@@ -1098,7 +1098,7 @@ definitions:
         required:
           - url
   
-  SENDGRID_EMAIL_ACTION::
+  SENDGRID_EMAIL_ACTION:
     description: |
       An action for sending an e-mail through SendGrid
     allOf:

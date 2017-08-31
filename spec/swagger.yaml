@@ -1096,8 +1096,61 @@ definitions:
                 type: string
         required:
           - url
+  
+  SENDGRID_EMAIL_ACTION::
+    description: |
+      An action for sending an e-mail through SendGrid
+    allOf:
+      - $ref : '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          apiKey:
+            type: string
+            description: the api key to use when calling the SendGrid api
+          templateId:
+            type: string
+            description: the id of the email template
+          from:
+            type: string
+            description: the email to appear in the From field of the email
+          replyTo:
+            type: string
+            description: the email to appear in the ReplyTo field of the email
+          emailTo:
+            type: string
+            description: the email address to send to
+          fromName:
+            type: string
+            description: the name/alias to appear in the From field of the email
+          replyToName:
+            type: string
+            description: the name/alias to appear in the ReplyTo field of the email
+          emailToName:
+            type: string
+            description: the name/alias to appear in the To field of the email
+          subject:
+            type: string
+            description: the email's subject
+          substitutions:
+            type: array
+            items:
+              type: object
+              properties:                
+                token:
+                  type: string
+                  description: the token to be replaced, e.g. %NAME%
+                value:
+                  type: string
+                  description: |
+                    value - the value to be inserted in the email in place of the token. This can be/contain references to user attributes
+                    using the syntax ${<attribute>}, e.g. ${user.Email}.  The set of possible user attributes is defined through the data dictionaries.
 
-
+        required:
+          - apiKey
+          - templateId
+          - from
+          - replyTo
+          
   WAIT:
     description: Waits for a specified amount of time
     allOf:
@@ -1304,6 +1357,5 @@ parameters:
         enum:
           - 'name'
           - '-name'
-
 
 

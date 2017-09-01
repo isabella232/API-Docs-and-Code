@@ -1,0 +1,55 @@
+body {
+	margin: 0;
+	padding-top: 40px;
+}
+
+nav {
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 100;
+}
+
+#links_container {
+	margin: 0;
+	padding: 0;
+	background-color: #fafafa;
+	width: 100%;
+	vertical-align: middle;
+}
+
+#links_container li, #links_container a {
+	display: inline-block;
+	text-decoration: none;
+	padding: 5px;
+	color: rgba(38, 50, 56, 0.9);
+	cursor: pointer;
+	font-family: "Montserrat", sans-serif;
+	font-size: 20px;
+	height: 45px;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.selected_menu {
+	font-weight: bold;
+}
+
+/* Edit your header styles here */
+.header {
+	font-family: sans-serif;
+	font-size: 20px;
+	text-align: center;
+	position: fixed;
+	width: 100%;
+	line-height: 42px;
+	top: 0;
+	left: 0;
+}
+
+.md-html {
+	min-width: 200px;
+	max-width: 790px;
+	padding-left: 80px;
+	padding-top: 40px
+}

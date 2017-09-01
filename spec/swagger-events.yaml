@@ -87,9 +87,9 @@ paths:
   /events:
 
     post:
-      summary: Processes a batch of user events
+      summary: Ingestion of a batch of events
       description: |
-         Processes a batch of user events, activate/progress the relevant workflows and persist the provided user information.
+         Processes a batch of user events, activates/progresses the relevant workflows and persists the provided user information.
       tags:
         - events ingestion
       operationId: recordEvent

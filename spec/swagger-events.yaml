@@ -6,8 +6,8 @@ info:
     The DataTiger Events API provides an endpoint for processing batches of customer events.
     
     The customer is responsible for sending all relevant events to this endpoint. As a response to the events, the DataTiger 
-    platform can activate workflows, store user metadata and perform all necessary actions as set-up using the 
-    [management API](https://apidocs.datatiger.com/management.html "Management API").
+    platform can activate workflows, store user metadata and perform all necessary actions (according to how the system 
+    is setup using the [management API](https://apidocs.datatiger.com/management.html "Management API") ).
     
     ## Core Events API concepts
     
@@ -22,12 +22,40 @@ info:
     
     ### Events structure
     An events API request consists of a user identifier and a list of events for this user. All events must specify a set of required
-    properties (such as the event type) and, depending on event type, futher properties and user information.
+    properties (such as the event type) and, depending on event type, further properties and user information.
     
     The set of event and user properties are detailed in the message syntax below. 
     
+    ## Examples
     
-    ## Examples  
+    Here is an example of a batch for a single user registration event:
+    
+    ```
+    curl -X POST \
+      https://6f92bwvk0k.execute-api.eu-west-1.amazonaws.com/LATEST/events \
+      -H 'content-type: application/json' \
+      -H 'x-api-key: ...replaceTheApiKeyHere...' \
+      -d '{
+      "userId": "uniqueUserId_0904295",
+      "events": [
+        {
+          "UserId": "uniqueUserId_0904295",
+          "AppId": "10000",
+          "EventType": "UserRegistration",
+          "Version": "1.0",
+          "CreatedOn": 1504287529000,
+          "User": {
+            "UserId": "uniqueUserId_0904295",
+            "AppId": "10000",
+            "Version": "1.0",
+            "LastActiveOn": 1504287529001
+          }
+        }
+      ]
+    }'
+    ```
+    
+      
     
   version: "1.0.0"
 
@@ -95,7 +123,7 @@ definitions:
 
   EventBatchType:
     type: object
-    description: A batch of events. All events in a single batch must be for the same user (as define by the userId property)
+    description: A batch of events. All events in a single batch must be for the same user (as defined by the userId property)
     required:
       - userId
       - events

@@ -6,7 +6,8 @@ info:
     The DataTiger Events API provides an endpoint for processing batches of customer events.
     
     The customer is responsible for sending all relevant events to this endpoint. As a response to the events, the DataTiger 
-    platform can activate workflows, store user metadata and perform all necessary actions as set-up by the management API.
+    platform can activate workflows, store user metadata and perform all necessary actions as set-up by the 
+    [management API](https://apidocs.datatiger.com/management.html "Management API").
     
     ## Authentication
     All requests must be authenticated using the API key that is associated with the event API endpoint (unique per customer). 

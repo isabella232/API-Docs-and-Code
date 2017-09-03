@@ -1,0 +1,21 @@
+var unirest = require("unirest");
+
+var req = unirest("GET", "http://preprod.api.datatiger.com/applications/%7Bapplication%7D/abtests");
+
+req.query({
+  "name": "SOME_STRING_VALUE",
+  "page": "SOME_NUMBER_VALUE",
+  "perPage": "SOME_NUMBER_VALUE",
+  "orderby": "SOME_ARRAY_VALUE"
+});
+
+req.headers({
+  "content-type": "application/json"
+});
+
+
+req.end(function (res) {
+  if (res.error) throw new Error(res.error);
+
+  console.log(res.body);
+});

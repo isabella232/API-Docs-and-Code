@@ -14,6 +14,8 @@ info:
   title: DataTiger Events API
   description: |
 
+    # Introduction 
+    The Events API is designed to ingest the maximum amount of data in the fastes and most resource efficient way possible. In order to achieve this, it is running on a different architecture to the Managemet API and you will find the replication of some of the information in the events. 
 
     # Authentication
     All requests must be authenticated using an API key. Each event endpoint is associated with an API key, that is created during deployment (and can also be updated later on). 
@@ -74,7 +76,7 @@ paths:
         - "$ref": "#/parameters/authParam"
       responses:
         200:
-          description: The event was consumed
+          description: The event was consumed. This means it was added successfully to the event queue. It doesn't mean it was correct or could be processed, as this is an asynchronous operation. 
 
 
 
@@ -100,7 +102,7 @@ definitions:
       - events
     properties:
       userId:
-        description: The unique identifier of the user. This outside ID is used for efficient routing of the events batch to the appropriate handler without the need to parse the batch.
+        description: The unique identifier of the user. This outside ID is used for efficient routing of the events batch to the appropriate handler without the need to parse the whole batch.
         type: string
       events:
         description: A list of one or more events for the specified user.

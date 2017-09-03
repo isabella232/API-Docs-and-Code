@@ -1,0 +1,12 @@
+import http.client
+
+conn = http.client.HTTPConnection("preprod.api.datatiger.com")
+
+headers = { 'content-type': "application/json" }
+
+conn.request("GET", "/applications/%7Bapplication%7D/abtests?name=SOME_STRING_VALUE&page=SOME_NUMBER_VALUE&perPage=SOME_NUMBER_VALUE&orderby=SOME_ARRAY_VALUE", headers=headers)
+
+res = conn.getresponse()
+data = res.read()
+
+print(data.decode("utf-8"))

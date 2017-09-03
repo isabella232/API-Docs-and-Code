@@ -15,8 +15,15 @@ info:
   title: DataTiger Management API
   description: |
 
+    # Introduction 
+    The Management API allows you to setup and configure a wide range of components:
+    * Applications: every domain (i.e. your company name), can have multiple applications. Each one can have a unique name and is identified by a unique ID.  
+    * Workflows: every application, can have multiple workflows. Often our workflows are also refered to as user yourneys. Each one can have a unique name and is identified by a unique ID.  
+    * A/B Tests: we believe that you should be able to test pretty much everything you are doing, therefore A/B tests can be setup for all steps of a workflow. 
+    
+    
 
-    # General concepts
+    # General API concepts
     * Identifiers: All managed objects can be uniquelly identified by a plaform generated identifier.
     This is returned when an object is created or whenever it is retrieved from the database.
 

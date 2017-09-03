@@ -1,0 +1,26 @@
+var unirest = require("unirest");
+
+var req = unirest("GET", "http://preprod.api.datatiger.com/applications/%7Bapplication%7D/workflows");
+
+req.query({
+  "name": "SOME_STRING_VALUE",
+  "version": "SOME_STRING_VALUE",
+  "status": "SOME_ARRAY_VALUE",
+  "fromTime": "SOME_STRING_VALUE",
+  "endTime": "SOME_STRING_VALUE",
+  "page": "SOME_NUMBER_VALUE",
+  "perPage": "SOME_NUMBER_VALUE",
+  "orderby": "SOME_ARRAY_VALUE"
+});
+
+req.headers({
+  "content-type": "application/json",
+  "accept": "application/x-www-form-urlencoded"
+});
+
+
+req.end(function (res) {
+  if (res.error) throw new Error(res.error);
+
+  console.log(res.body);
+});

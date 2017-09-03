@@ -1141,6 +1141,7 @@ definitions:
             description: the email's subject
           substitutions:
             type: array
+            description: an array of objects that defines tokens in the email along with the associated replacement values for each token
             items:
               type: object
               properties:                
@@ -1150,7 +1151,7 @@ definitions:
                 value:
                   type: string
                   description: |
-                    value - the value to be inserted in the email in place of the token. This can be/contain references to user attributes
+                    the value to be inserted in the email in place of the token. This can be/contain references to user attributes
                     using the syntax ${<attribute>}, e.g. ${user.Email}.  The set of possible user attributes is defined through the data dictionaries.
 
         required:

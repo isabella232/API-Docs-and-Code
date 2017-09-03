@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.rawgit.com/webcomponents/webcomponentsjs/v0.7.15/webcomponents-lite.min.js"></script>
+    <link rel="import" href="https://cdn.rawgit.com/zerodevx/zero-md/v0.2.0/build/zero-md.html">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/zerodevx/zero-md/v0.2.0/markdown-themes/default.css">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/zerodevx/zero-md/v0.2.0/highlight-themes/default.css">
+    
+    <title>DataTiger APIs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body {
+        margin: 0;
+        padding-top: 40px;
+      }
+      nav {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 100;
+      }
+      #links_container {
+          margin: 0;
+          padding: 0;
+          background-color: #fafafa;
+
+  	      width: 100%;
+  	      vertical-align : middle;
+      }
+      #links_container li {
+          display: inline-block;
+          padding: 5px;
+          color:  rgba(38, 50, 56, 0.9);
+          cursor: pointer;
+          font-family: "Montserrat", sans-serif;
+          font-size: 20px;
+          height:45px;
+          display:table-cell;
+          vertical-align : middle;
+      }
+       /* Edit your header styles here */
+      .header { font-family: sans-serif; font-size: 20px; text-align: center; position: fixed; width: 100%; line-height: 42px; top: 0; left: 0; }
+      .md-html { min-width: 200px; max-width: 790px;  padding-left: 80px; padding-top: 40px }
+
+      
+      
+    </style>
+  </head>
+  <body>
+  
+  
+
+    <!-- Top navigation placeholder -->
+         
+    <nav>
+      <ul id="links_container">
+      <li><a href="http://www.datatiger.com"><img src="http://stark-journey-33958.herokuapp.com/img/Data%20Tiger%20Logo%20in%20Left.png" height="42" hspace="20"></a></li>
+  
+      </ul>
+    </nav>
+    
+
+    <!-- Edit your Markdown URL file location here -->
+    <div id="intro" align="left">
+    	<zero-md file="https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/web/intro.md"><div class="md-html"></div></zero-md>
+	</div>
+    
+    
+    <redoc scroll-y-offset="body > nav"></redoc>
+
+    <script src="https://rebilly.github.io/ReDoc/releases/v1.x.x/redoc.min.js"> </script>
+    <script>
+      // list of APIS
+      var apis = [
+        {
+           name: 'Introduction',
+           url: 'https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/web/intro.md'
+        },
+        {
+          name: 'Events API',
+          url: 'https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/spec/swagger-events.yaml'
+        },
+        {
+          name: 'Management API',
+          url: 'https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/gh-pages/swagger.yaml'
+        }
+      ];
+      // initially render first API
+      //Redoc.init(apis[0].url);
+      // initially render Intro page
+      
+      function onClick() {
+    	if (this.innerText == 'Introduction')
+    	{
+    		//<iframe src="https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/README.md" style="border: 0; width: 100%; height: 100%; display: block; position: absolute; left: 0px; top: 0px;"/>
+			load_intro();
+    	}
+    	else
+    	{
+    		unload_intro();
+    		var url = this.getAttribute('data-link');
+        	Redoc.init(url);
+     	 }
+      }
+      // dynamically building navigation items
+      var $list = document.getElementById('links_container');
+      apis.forEach(function(api) {
+        var $listitem = document.createElement('li');
+        $listitem.setAttribute('data-link', api.url);
+        $listitem.innerText = api.name;
+        $listitem.addEventListener('click', onClick);
+        $list.appendChild($listitem);
+      });
+      
+      
+      function unload_intro() { 
+    	    var element = document.getElementById("intro");
+    	    element.style.display = "none";
+    	}
+      	function load_intro() { 
+      		window.location.reload();
+  	    	//var element = document.getElementById("intro");
+			//element.style.display = "block";   	
+  		}
+      
+    </script>
+  </body>
+</html>

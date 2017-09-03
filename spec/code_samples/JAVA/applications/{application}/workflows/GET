@@ -1,4 +1,0 @@
-HttpResponse<String> response = Unirest.get("http://preprod.api.datatiger.com/applications/%7Bapplication%7D/workflows?name=SOME_STRING_VALUE&version=SOME_STRING_VALUE&status=SOME_ARRAY_VALUE&fromTime=SOME_STRING_VALUE&endTime=SOME_STRING_VALUE&page=SOME_NUMBER_VALUE&perPage=SOME_NUMBER_VALUE&orderby=SOME_ARRAY_VALUE")
-  .header("accept", "application/x-www-form-urlencoded")
-  .header("content-type", "application/json")
-  .asString();

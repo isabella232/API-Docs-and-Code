@@ -1,11 +1,3 @@
-#While it makes a lot of sense to split the definition into multiple files,
-#most Open API tools I've found are a horrible mess and don't work very well with that.
-#Specifically:
-# - code-gen parsing works fine, but doesn't include other files in the generated definition
-# - swagger editor, which is the most decent error reporting there is, doesn't support multiple files
-#When these tools are fixed, maybe we can design the whole thing properly
-
-
 ##################################################################################
 #                       Global definitions
 ##################################################################################
@@ -17,8 +9,8 @@ info:
 
     # Introduction 
     The Management API allows you to setup and configure a wide range of components:
-    * Applications: every domain (i.e. your company name), can have multiple applications. Each one can have a unique name and is identified by a unique ID.  
-    * Workflows: every application, can have multiple workflows. Often our workflows are also refered to as user yourneys. Each one can have a unique name and is identified by a unique ID.  
+    * Applications: Every domain (i.e. your company name), can have multiple applications. Each one has a unique name and is identified by a unique ID.  
+    * Workflows: Every application can have multiple workflows. Often our workflows are also refered to as user journeys. Each one has a unique name and is identified by a unique ID.  
     * A/B Tests: we believe that you should be able to test pretty much everything you are doing, therefore A/B tests can be setup for all steps of a workflow. 
     
     
@@ -71,14 +63,14 @@ tags:
     description: Management of AB tests
   - name: workflows
     description: Management of workflows
-
-
+  - name: reporting
+    description: Reporting on workflows executions
 
 x-tagGroups:
   - name: System calls
     tags:
       - health
-  - name: User yourney management
+  - name: User journey management
     tags:
       - applications
       - workflows
@@ -99,7 +91,7 @@ paths:
         is necessary to know which attributes can be included in workflow condition expressions or
         segmentation expressions.
         Each attribute is identified by a name and a data type. The supported set of data types is
-        specified by the AttributeType enumeration.
+        specified by the AttributeType enumeration (datatype property of the response).
       tags:
         - datatypes
 
@@ -126,17 +118,13 @@ paths:
                 description: |
                   A map having as keys the available attribute types for building segmentation & condition expressions
                   and as values the list of operators that are applicable for each respective attribute type.
-                  E.g. a mapping of the form AttributeType.TEXT -> [ 'CONTAINS', 'BEGINS WITH', 'IS', 'IS NOT',...] etc.
+                  E.g. a mapping of the form AttributeType Integer -> [ 'Greater Than', 'Less Than', 'Equal',...] etc.
                 type: object
                 properties:
                   attributeType:
-                    type: array
-                    items:
-                      "$ref": "#/definitions/OperatorType"
+                    "$ref": "#/definitions/OperatorType"
                 additionalProperties:
-                    type: array
-                    items:
-                      "$ref": "#/definitions/OperatorType"
+                  "$ref": "#/definitions/OperatorType"
           examples:
             #Example in yaml
             application/json:
@@ -716,6 +704,57 @@ paths:
             $ref: '#/definitions/ErrorType'
 
 
+## Reporting Endpoints
+
+  /applications/{applicationId}/workflows/{workflowId}/reports:
+
+    get:
+      summary: Returns the number of executions of each step of a given workflow and time period
+      description: |
+        List the number of executions per workflow step for a specified time period
+      tags:
+        - reporting
+
+      operationId: reportWorkflow
+      parameters:
+        - "$ref": "#/parameters/applicationId"
+        - "$ref": "#/parameters/workflowId"
+        - "$ref": "#/parameters/startFilter"
+        - "$ref": "#/parameters/endFilter"
+        - "$ref": "#/parameters/aggregationFilter"
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Upon success the response will contain the initial request parameters under the request key while the groups key will contain the table of execution counts per time unit
+          schema:
+            $ref: '#/definitions/ReportingResponseType'
+        400:
+          description: For client errors, the code indicates what was wrong about the request alongside an optinal message with a human readable explanation of what went wrong.
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+
+
+parameters:
+
+###Path parameters
+    applicationId:
+        name: applicationId
+        in: path
+        required: true
+        type: string
+        description: The identifier of the application
+
+    workflowId:
+        name: workflowId
+        in: path
+        required: true
+        type: string
+        description: The identifier for the workflow
+
+###Generic filtering parameters
+
 
 
 ##################################################################################
@@ -817,7 +856,7 @@ definitions:
       name:
         type: string
         description: the name of the attribute
-      datatype:
+      type:
         $ref: '#/definitions/AttributeType'
         description: the data type of the attribute
 
@@ -831,7 +870,14 @@ definitions:
       - float
       - datetime
 
+
+
   OperatorType:
+    type: array
+    items:
+      "$ref": "#/definitions/OperatorItemType"
+
+  OperatorItemType:
     type: object
     properties:
       name:
@@ -1213,6 +1259,84 @@ definitions:
           - expression
 
 
+  ReportingResponseType:
+    type: object
+    properties:
+      request:
+        $ref: '#definitions/ReportingRequestType'
+      groups:
+        type: array
+        items:
+          $ref: '#/definitions/GroupValuesType'
+    example:
+      request:
+        applicationId: 123e4567-e89b-12d3-a456-426655440000
+        workflowId: 123e4567-e89b-12d3-a456-426655440000
+        start: '2017-09-01T12:00:00Z'
+        end:  '2017-09-01T11:00:00Z'
+        aggregation: HOUR
+      groups:
+        -
+          step: Send_Email_Action
+          values:
+            -
+              - "2018-01-01"
+              - 100
+            -
+              - "2018-01-02"
+              - 200
+
+        -
+          step: START
+          values:
+            -
+              - "2018-01-01"
+              - 10
+            -
+              - "2018-01-02"
+              - 20
+
+
+  GroupValuesType:
+    type: object
+    properties:
+      step:
+        type: string
+      workflowId:
+        type: number
+      values:
+        type: array
+        items:
+          type: array
+          items:
+            type: string
+
+  ReportingRequestType:
+    type: object
+    description: Details the properties of the request object for the reporting endpoint
+    properties:
+      applicationId:
+        type: string
+      workflowId:
+        type: string
+      start:
+        $ref: '#definitions/ISODateTimeType'
+      end:
+        $ref: '#definitions/ISODateTimeType'
+      aggregation:
+        $ref: '#definitions/TimeUnitType'
+
+  ISODateTimeType:
+    description: ISODateTimeType, ISO8601 date format with optional time part
+    type: string
+    format: date-time
+
+  TimeUnitType:
+    description: TimeUnit
+    type: string
+    enum: [HOUR,DAY,WEEK,MONTH]
+
+
 ##################################################################################
 #                       PARAMETERS
 ##################################################################################
@@ -1368,3 +1492,27 @@ parameters:
           - '-name'
 
 
+    startFilter:
+        name: start
+        in: query
+        required: true
+        description: The day from which reporting should begin, inclusively.
+        type: string
+        format: date-time
+
+    endFilter:
+        name: end
+        in: query
+        required: true
+        description: The day at which reporting should end, inclusively.
+        type: string
+        format: date-time
+
+    aggregationFilter:
+      name: aggregate
+      in: query
+      required: false
+      type: string
+      enum: [HOUR,DAY,WEEK,MONTH]
+      description: |
+        The time unit on which to aggregate the reported statistics.

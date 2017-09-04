@@ -1,11 +1,3 @@
-#While it makes a lot of sense to split the definition into multiple files,
-#most Open API tools I've found are a horrible mess and don't work very well with that.
-#Specifically:
-# - code-gen parsing works fine, but doesn't include other files in the generated definition
-# - swagger editor, which is the most decent error reporting there is, doesn't support multiple files
-#When these tools are fixed, maybe we can design the whole thing properly
-
-
 ##################################################################################
 #                       Global definitions
 ##################################################################################
@@ -17,8 +9,8 @@ info:
 
     # Introduction 
     The Management API allows you to setup and configure a wide range of components:
-    * Applications: every domain (i.e. your company name), can have multiple applications. Each one can have a unique name and is identified by a unique ID.  
-    * Workflows: every application, can have multiple workflows. Often our workflows are also refered to as user yourneys. Each one can have a unique name and is identified by a unique ID.  
+    * Applications: Every domain (i.e. your company name), can have multiple applications. Each one has a unique name and is identified by a unique ID.  
+    * Workflows: Every application can have multiple workflows. Often our workflows are also refered to as user journeys. Each one has a unique name and is identified by a unique ID.  
     * A/B Tests: we believe that you should be able to test pretty much everything you are doing, therefore A/B tests can be setup for all steps of a workflow. 
     
     
@@ -78,7 +70,7 @@ x-tagGroups:
   - name: System calls
     tags:
       - health
-  - name: User yourney management
+  - name: User journey management
     tags:
       - applications
       - workflows
@@ -99,7 +91,7 @@ paths:
         is necessary to know which attributes can be included in workflow condition expressions or
         segmentation expressions.
         Each attribute is identified by a name and a data type. The supported set of data types is
-        specified by the AttributeType enumeration.
+        specified by the AttributeType enumeration (datatype property of the response).
       tags:
         - datatypes
 
@@ -126,17 +118,13 @@ paths:
                 description: |
                   A map having as keys the available attribute types for building segmentation & condition expressions
                   and as values the list of operators that are applicable for each respective attribute type.
-                  E.g. a mapping of the form AttributeType.TEXT -> [ 'CONTAINS', 'BEGINS WITH', 'IS', 'IS NOT',...] etc.
+                  E.g. a mapping of the form AttributeType Integer -> [ 'Greater Than', 'Less Than', 'Equal',...] etc.
                 type: object
                 properties:
                   attributeType:
-                    type: array
-                    items:
-                      "$ref": "#/definitions/OperatorType"
+                    "$ref": "#/definitions/OperatorType"
                 additionalProperties:
-                    type: array
-                    items:
-                      "$ref": "#/definitions/OperatorType"
+                  "$ref": "#/definitions/OperatorType"
           examples:
             #Example in yaml
             application/json:
@@ -817,7 +805,7 @@ definitions:
       name:
         type: string
         description: the name of the attribute
-      datatype:
+      type:
         $ref: '#/definitions/AttributeType'
         description: the data type of the attribute
 
@@ -831,7 +819,14 @@ definitions:
       - float
       - datetime
 
+
+
   OperatorType:
+    type: array
+    items:
+      "$ref": "#/definitions/OperatorItemType"
+
+  OperatorItemType:
     type: object
     properties:
       name:

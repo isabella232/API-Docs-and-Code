@@ -9,8 +9,10 @@ info:
     platform can activate workflows, store user metadata and perform all necessary actions (according to how the system 
     is setup using the [management API](https://apidocs.datatiger.com/management.html "Management API") ).
     
-    # Introduction 
-    The Events API is designed to ingest the maximum amount of data in the fastes and most resource efficient way possible. In order to achieve this, it is running on a different architecture to the Managemet API and you will find the replication of some of the information in the events. 
+    ## Introduction 
+    The Events API is designed to ingest the maximum amount of data in the fastest and most resource efficient way possible. 
+    In order to achieve this, it is running on a different architecture to the Managemet API and you will find the 
+    replication of some of the information in the events. 
 
 
     ## Core Events API concepts
@@ -134,11 +136,11 @@ definitions:
       - events
     properties:
       userId:
-<<<<<<< HEAD
-        description: The unique identifier of the user. This outside ID is used for efficient routing of the events batch to the appropriate handler without the need to parse the whole batch.
-=======
-        description: The unique identifier of the user. This identifier is used to make sure that all events for the same user will be processed sequentially (i.e. no two batches with the same user ID will be processed in parallel)
->>>>>>> 03232b9035c6a5a480ca25ffb8027c16cc26b4bb
+        description: |
+          The unique user identifier that is associated with this batch. The individual events also contain the same 
+          user identifier, but this top level identifier ensures the deterministic and timely processing of events without the need to
+          parse the whole batch. Deterministic means that no events for the same user will be processed 
+          in parallel, so for a given sequence of events the outcome will always be the same.
         type: string
       events:
         description: A list of one or more events for the specified user.
@@ -155,7 +157,9 @@ definitions:
       - UserUpdated
 
   BaseExternalEventType:
-    description: The representation of an event. Several properties (userId, AppId, EventType, CreatedOn, Version, User) are required for all events. Depending on the event type, further required or optional properties may be available.
+    description: |
+      The representation of an event. Several properties (userId, AppId, EventType, CreatedOn, Version, User) are required for all events.
+      Depending on the event type, further required or optional properties may be available.
     type: object
     discriminator: EventType
     required:
@@ -176,14 +180,15 @@ definitions:
        "$ref": "#/definitions/EventTypeType"
      Version:
       type: string
-      description: The version of the event schema according to which this event will be validated and parsed. The existing versions can be queried through the management API /datatypes resource.
+      description: |
+        The version of the event schema according to which this event will be validated and parsed.
+        The existing versions can be queried through the management API /datatypes resource.
      CreatedOn:
       description: Event creation time
       $ref: '#/definitions/EpochMillis'
      User:
       description: User properties. 
       $ref: '#/definitions/UserType'
-
 
   UserRegistration:
     description: Event type for a new user registration
@@ -216,7 +221,12 @@ definitions:
         description: The version of the user schema according to which the properties of the user will be validated and parsed
       IPAddress:
         type: string
-        description: Last IP address 
+        description: |
+          The IP address of the user. This is used to efficiently route the user events
+          so that they are processed in a timely and deterministic way (by ensuring 
+          without to ensure efficient processing and sequential
+          processing of the events for the same user without the need to parse the whole batch
+          (i.e. no two batches with the same user ID will be prn: Last IP address 
       FirstName:
         type: string
         description: User first name

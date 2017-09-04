@@ -1511,7 +1511,7 @@ parameters:
     aggregationFilter:
       name: aggregate
       in: query
-      required: false
+      required: true
       type: string
       enum: [HOUR,DAY,WEEK,MONTH]
       description: |

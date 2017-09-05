@@ -6,6 +6,7 @@ info:
 
   title: DataTiger Management API
   description: |
+    
 
     ## Introduction 
     The Management API allows you to setup and configure a wide range of components:
@@ -86,22 +87,22 @@ info:
     
     ### Workflow activation
     Workflow activation is controlled by it's status and the trigger expressions. For a workflow to be activated from a user event the following conditions must be true:
-    * The workflow must not be already active for that user 
+    * The workflow must not be already in progress for that user 
     * The workflow status must be 'ACTIVE'
     * The trigger expression must evaluate to true
     
-    When a workflow is activated, it's steps are executed starting from the workflow starting step. The processing continues until the workflow reaches a final state or fails. Depending
+    When a workflow is activated, its steps are executed starting from the workflow starting step. The processing continues until the workflow reaches a final state or fails. Depending
     on the workflow, its execution may require waiting until some action if performed. 
     
     ### Trigger expressions
     Trigger expressions are boolean expressions over the user and event attributes (available attributes and operations are returned by the /datatypes request).
-    Within a trigger expression event attribute is referenced using the 'event' prefix and a user attribute with the 'user' prefix.
+    Within a trigger expression, an event attribute is referenced using the 'event' prefix and a user attribute with the 'user' prefix.
     
     The expressions consist of the following:
     * AND, OR and NOT operators
     * parentheses
-    * user and event properties such as user.UserId' or 'event.EventType'
-    * Operators: One of == | > | < | >= | <= 
+    * user and event properties such as 'user.UserId' or 'event.EventType'
+    * Operators: One of ==, >, <, >=, <= 
     * Literals
       * Strings: 'strings are enclosed in single quotes'
       * DateTime: '2011-12-03T10:15:30'. The dateTimes are always expressed in UTC
@@ -119,14 +120,14 @@ info:
     
     
     ### Workflow steps
-    The workflow steps model what happens after a workflow is activated as a graph of nodes. All nodes share a set of common attributes:
+    The workflow steps define what happens after a workflow is activated as a graph of nodes. All nodes share a set of common attributes:
     * name - gives a user friendly name to a node
     * description - useful for putting a note about the role of a specific node in the scenario
     * type - indicates the type of the node
     * transitions - From each node there's one or more labeled transitions to other nodes within the same scenario definition. This captures this
       information, like a list of pairs of the form (label, node names) 
 
-    The ndoe type must always be defined, and can be one of the following:
+    The node type must always be defined, and can be one of the following:
     * START - Start nodes are a special type of nodes that indicate the starting point of a workflow. There's only one START node per workflow definition and it has the special and reserved name 'START'.
     * TERMINAL - This node type indicates that the workflow ends at this point, they act like terminal points in the graph stopping any further traversing of the graph of nodes. There can be many TERMINAL 
       nodes per workflow definition and they can have custom names.
@@ -139,11 +140,12 @@ info:
      Distinct node types require specific properties to define their actions. All these are defined in the workflow types below.
      
      
-     Each type of node has a set of predefined transitions as follows:
-     * START
+    Each type of node has a set of predefined outgoing transitions as follows:
+      
+    * START
       * OK - The 'OK' transition will be followed unconditionally when encountering a START step. 
-     * TERMINAL: No outgoing transitions are considered when reaching a TERMINAL. Instead the workflow is marked as completed at that point.
-     * ACTION 
+    * TERMINAL: No outgoing transitions are considered when reaching a TERMINAL. Instead the workflow is marked as completed at that point.
+    * ACTION 
       * OK - Followed when the webhook call has been completed successfully
       * ERROR - Followed in case the call couldn't be made or we received a 5xx response code
     * WAIT
@@ -154,7 +156,7 @@ info:
       * TIMEOUT - For conditions with a timeout setting, this will be followed when the requested delay has been reached.
 
      
-     To put everything together here is an example workflow definition in JSON:
+    To put everything together here is an example workflow definition in JSON:
      ```
         {
             "name": "Example Email Workflow",

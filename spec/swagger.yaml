@@ -706,7 +706,7 @@ paths:
 
 ## Reporting Endpoints
 
-  /applications/{applicationId}/workflows/{workflowId}/reports:
+  /applications/{application}/workflows/{workflow}/reports:
 
     get:
       summary: Returns the number of executions of each step of a given workflow and time period
@@ -717,11 +717,11 @@ paths:
 
       operationId: reportWorkflow
       parameters:
-        - "$ref": "#/parameters/applicationId"
-        - "$ref": "#/parameters/workflowId"
-        - "$ref": "#/parameters/startFilter"
-        - "$ref": "#/parameters/endFilter"
-        - "$ref": "#/parameters/aggregationFilter"
+        - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/workflowParam"
+        - "$ref": "#/parameters/reportingFromFilter"
+        - "$ref": "#/parameters/reportingUntilFilter"
+        - "$ref": "#/parameters/reportingAggregationFilter"
       produces:
         - application/json
       responses:
@@ -734,24 +734,6 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
-
-
-parameters:
-
-###Path parameters
-    applicationId:
-        name: applicationId
-        in: path
-        required: true
-        type: string
-        description: The identifier of the application
-
-    workflowId:
-        name: workflowId
-        in: path
-        required: true
-        type: string
-        description: The identifier for the workflow
 
 ###Generic filtering parameters
 
@@ -1492,26 +1474,27 @@ parameters:
           - '-name'
 
 
-    startFilter:
-        name: start
+# Reporting parameters
+    reportingFromFilter:
+        name: from
         in: query
         required: true
-        description: The day from which reporting should begin, inclusively.
+        description: A ISO-8601 date that specifies the starting point from which executions will be returned
         type: string
         format: date-time
 
-    endFilter:
-        name: end
+    reportingUntilFilter:
+        name: until
         in: query
         required: true
-        description: The day at which reporting should end, inclusively.
+        description: A ISO-8601 date-time that specifies the cut-off point after which executions will not be reported
         type: string
         format: date-time
 
-    aggregationFilter:
+    reportingAggregationFilter:
       name: aggregate
       in: query
-      required: true
+      required: false
       type: string
       enum: [HOUR,DAY,WEEK,MONTH]
       description: |

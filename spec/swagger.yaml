@@ -248,6 +248,7 @@ x-tagGroups:
       - applications
       - workflows
       - abtests
+      - reporting
   - name: Data types
     tags:
       - datatypes      

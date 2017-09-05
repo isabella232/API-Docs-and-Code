@@ -79,26 +79,136 @@ info:
       http://preprod.api.datatiger.com/applications \
       -b cookieFile
     ```
-    ##Workflows
+    
+    ## Workflows
     The active workflows of an application collectively define how the DataTiger platform reacts to incoming user events.  Each workflow belongs to a single application and has
     a unique name within that application.
     
-    ###Workflow activation
-    Workflow activation is controlled by the following workflow properties:
-    * startsOn
-    * endsOn
-    * status
-    * triggerExpression
+    ### Workflow activation
+    Workflow activation is controlled by it's status and the trigger expressions. For a workflow to be activated from a user event the following conditions must be true:
+    * The workflow must not be already active for that user 
+    * The workflow status must be 'ACTIVE'
+    * The trigger expression must evaluate to true
     
-    For a workflow to be activated for a user, the current time must be between startsOn and endsOn and status must be 'ACTIVE'. Furthermore, the workflow must not be already active for that user.
+    When a workflow is activated, it's steps are executed starting from the workflow starting step. The processing continues until the workflow reaches a final state or fails. Depending
+    on the workflow, its execution may require waiting until some action if performed. 
     
-    When all the above are true and user event is received, the triggerExpression gets evaluated. If it evaluates to 'true' the workflow gets activated and its steps are executed starting from
-    the workflow starting state. The processing continues until the workflow finishes a final state or fails.
+    ### Trigger expressions
+    Trigger expressions are boolean expressions over the user and event attributes (available attributes and operations are returned by the /datatypes request).
+    Within a trigger expression event attribute is referenced using the 'event' prefix and a user attribute with the 'user' prefix.
     
-    ###Trigger expressions
+    The expressions consist of the following:
+    * AND, OR and NOT operators
+    * parentheses
+    * user and event properties such as user.UserId' or 'event.EventType'
+    * Operators: One of == | > | < | >= | <= 
+    * Literals
+      * Strings: 'strings are enclosed in single quotes'
+      * DateTime: '2011-12-03T10:15:30'. The dateTimes are always expressed in UTC
+      * Boolean: true / false
+      * Integer: 1234, -1234
+      * Float: 1.01
+    * Expressions relative to now
+      * user.LastActiveOn in the last 4 MINUTES
+      
+      
+    A simple example expression is as follows:
+    ```
+      user.LastActiveOn in the last 1 DAYS AND event.eventType == 'UserUpdated'
+    ```
     
     
-    ###Workflow steps
+    ### Workflow steps
+    The workflow steps model what happens after a workflow is activated as a graph of nodes. All nodes share a set of common attributes:
+    * name - gives a user friendly name to a node
+    * description - useful for putting a note about the role of a specific node in the scenario
+    * type - indicates the type of the node
+    * transitions - From each node there's one or more labeled transitions to other nodes within the same scenario definition. This captures this
+      information, like a list of pairs of the form (label, node names) 
+
+    The ndoe type must always be defined, and can be one of the following:
+    * START - Start nodes are a special type of nodes that indicate the starting point of a workflow. There's only one START node per workflow definition and it has the special and reserved name 'START'.
+    * TERMINAL - This node type indicates that the workflow ends at this point, they act like terminal points in the graph stopping any further traversing of the graph of nodes. There can be many TERMINAL 
+      nodes per workflow definition and they can have custom names.
+    * ACTION - This node type represents a webhook action, i.e. that a URL should be invoked as a result of the workflow reaching this step.
+    * WAIT - Represents an unconditional wait action for a specified amount of time.
+    * CONDITION - A condition node acts as a decision point to determine which path the workflow will follow out of multiple alternatives. 
+    * WAIT_ON_CONDITION - A condition that is evaluated multiple times within a given time limit. If at any time the condition becomes true, 
+      then the flow continues along the TRUE transition. Otherwise, if the time limit is passed and the condition is still false, then the FALSE transition is taken.
+    * SENDGRID_EMAIL_ACTION - Action for sending an email through SendGrid.
+     Distinct node types require specific properties to define their actions. All these are defined in the workflow types below.
+     
+     
+     Each type of node has a set of predefined transitions as follows:
+     * START
+      * OK - The 'OK' transition will be followed unconditionally when encountering a START step. 
+     * TERMINAL: No outgoing transitions are considered when reaching a TERMINAL. Instead the workflow is marked as completed at that point.
+     * ACTION 
+      * OK - Followed when the webhook call has been completed successfully
+      * ERROR - Followed in case the call couldn't be made or we received a 5xx response code
+    * WAIT
+      * TIMEOUT - Followed when the requested delay has been reached.
+    * CONDITION 
+      * TRUE - Followed when the condition evaluates to TRUE
+      * FALSE - Followed when the condition evaluates to FALSE
+      * TIMEOUT - For conditions with a timeout setting, this will be followed when the requested delay has been reached.
+
+     
+     To put everything together here is an example workflow definition in JSON:
+     ```
+        {
+            "name": "Example Email Workflow",
+            "applicationId": 10000,
+            "version": 1,
+            "status": "ACTIVE",
+            "triggerExpression": "event.EventType == 'DemoEmailSend'",
+            "steps": {
+                "START": {
+                    "name": "Start",
+                    "type": "START",
+                    "transitions": {
+                        "OK": "SEND_EMAIL",
+                        "ERROR": "FIN"
+                    }
+                },
+                "SEND_EMAIL": {
+                    "name": "WELCOME_EMAIL",
+                    "type": "SENDGRID_EMAIL_ACTION",
+                    "transitions": {
+                        "OK": "FIN",
+                        "ERROR": "FIN_ERR"
+                    },
+                    "templateId": "sendGrid ID",
+                    "apiKey": "sendGrid API Key",
+                    "emailTo": "${user.Email}",
+                    "emailToName": "${user.FirstName}",
+                    "replyTo": "your@email.com",
+                    "replyToName": "Your Name",
+                    "from": "your@email.com",
+                    "fromName": "DataTiger",
+                    "subject": "Welcome to DataTiger",
+                    "trackOpen": true,
+                    "trackClick": true,
+                    "substitutions": [
+                        {
+                            "token": "%firstName%",
+                            "value": "${user.FirstName}"
+                        }
+                    ],
+                    "sandboxed": false
+                },
+                "FIN": {
+                    "name": "FIN",
+                    "type": "TERMINAL"
+                },
+                "FIN_ERR": {
+                    "name": "FIN_ERR",
+                    "type": "TERMINAL"
+                }
+            }
+        }
+    ```     
+     
     
     
     
@@ -283,7 +393,6 @@ paths:
               type: object
               properties:
                 paging:
-                  description: Paging information of the response
                   $ref: '#/definitions/PagingType'
                 items:
                   description: Array of the returned applications
@@ -440,7 +549,6 @@ paths:
               type: object
               properties:
                 paging:
-                  description: Paging information of the response
                   $ref: '#/definitions/PagingType'
                 items:
                   description: Array of the returned applications
@@ -505,7 +613,7 @@ paths:
     get:
       summary: Get an AB test
       description: |
-        Reuturn an AB test, identified by the AB test ID
+        Return an AB test, identified by the AB test ID
       tags:
         - abtests
       operationId: getABTestOfApplication
@@ -576,7 +684,6 @@ paths:
               type: object
               properties:
                 paging:
-                  description: Paging information of the response
                   $ref: '#/definitions/PagingType'
                 items:
                   description: Array of the returned applications
@@ -755,7 +862,6 @@ definitions:
     type: object
     properties:
       id:
-        description: The auto-generated unique identifier of the object
         $ref: '#/definitions/IdType'
 
   VersionType:
@@ -766,7 +872,6 @@ definitions:
     type: object
     properties:
       version:
-        description: The auto-generated version of this object
         $ref: '#/definitions/VersionType'
 
   ErrorType:
@@ -832,7 +937,6 @@ definitions:
         description: the name of the attribute
       type:
         $ref: '#/definitions/AttributeType'
-        description: the data type of the attribute
 
   AttributeType:
     description: Enumeration of all supported data types for user and event attributes
@@ -876,7 +980,6 @@ definitions:
                 - name
         properties:
             name:
-                description: The name of the application
                 "$ref" : "#/definitions/NameType"
 
 
@@ -908,13 +1011,11 @@ definitions:
       - testGroups
     properties:
       name:
-        description: The name of the AB test
         "$ref" : "#/definitions/NameType"
       description:
         description: The user description for this AB test
         type: string
       application:
-        description: Reference to the associated application
         $ref: "#/definitions/IdType"
       seed:
         description: A seed for the AB test. AB tests with the same seeds and test sizes will result in groups with the exact same users.
@@ -980,10 +1081,6 @@ definitions:
                 "$ref" : "#/definitions/NameType"
             applicationId:
                 "$ref": "#/definitions/IdType"
-            startsOn:
-                "$ref" : "#/definitions/DateTimeUNIXTimestamp"
-            endsOn:
-                "$ref" : "#/definitions/DateTimeUNIXTimestamp"
             status:
                 "$ref" : "#/definitions/StatusType"
             triggerExpression:
@@ -1078,14 +1175,19 @@ definitions:
         properties:
           url:
             type: string
-            description: The URL of the action handler
+            description: the URL to invoke 
           numRetries:
             type: number
             format: int32
             description: Number of retries before permanent failure
           params:
             type: object
-            description: parameters to pass to the action
+            description: |
+              the parameters to include in the invocation. This can take two forms:
+              *  A list of user attributes names (named 'attributes') to include as <name>=<value> pairs in the HTTP request. 
+              *  Hardcoded name-value pairs. The values can also contain interpolation tokens of the form ${<ref>} where ref is a reference to a user attribute meaning 
+                 that the whole token will be replaced by the value of the referenced attribute.  E.g. the value "Hello ${User.FirstName}" will be interpolated to 
+                 "Hello Fran" if User.FirstName was "Fran" for the user associated with this workflow instance.
             properties:
               parameterName:
                 type: string
@@ -1162,10 +1264,10 @@ definitions:
           timeUnit:
             type: string
             enum:
-              - hour
-              - day
-              - week
-              - month
+              - HOURS
+              - DAYS
+              - WEEKS
+              - MONTHS
             description: Specifies the time unit
         required:
           - duration
@@ -1185,7 +1287,7 @@ definitions:
         properties:
           expression:
             type: string
-            description: The boolean expression to evaluate
+            description: the expression to evaluate. This has the same semantics as the workflow trigger expression.
           duration:
             type: number
             format: int32
@@ -1193,10 +1295,10 @@ definitions:
           timeUnit:
             type: string
             enum:
-              - hour
-              - day
-              - week
-              - month
+              - HOURS
+              - DAYS
+              - WEEKS
+              - MONTHS
             description: Specifies the time unit
         required:
           - expression
@@ -1381,10 +1483,6 @@ parameters:
           - '-name'
           - version
           - -version
-          - startsOn
-          - -startsOn
-          - endsOn
-          - -endsOn
           - status
           - -status
 

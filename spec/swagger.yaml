@@ -967,9 +967,6 @@ definitions:
         description: a value that uniquely identifies this operator
 
 
-  DateTimeUNIXTimestamp:
-    type: string
-    description: "Date and time formated as a UNIX timestamp. A positive number that specifies the number of seconds since the epoch (1970-01-01 00:00:00 UTC). Up to 6 decimal places (microsecond precision) are preserved."
 
   PropertyValueType:
     type: string
@@ -1375,7 +1372,7 @@ definitions:
         $ref: '#/definitions/TimeUnitType'
 
   ISODateTimeType:
-    description: ISODateTimeType, ISO8601 date format with optional time part
+    description: ISODateTimeType, ISO8601 date format with optional time part. For instance, 1970-01-18T09:19:41.204+0000
     type: string
     format: date-time
 

@@ -852,8 +852,6 @@ definitions:
       - float
       - datetime
 
-
-
   OperatorType:
     type: array
     items:
@@ -1002,29 +1000,18 @@ definitions:
                 - steps
         properties:
             name:
-                description: The name of the workflow
                 "$ref" : "#/definitions/NameType"
             application:
-                description: |
-                  The associated application id. This is not required, as the application reference is part of the URL. If it is specified, however,
-                  it should refer to the same application as the URL parameter.
-
                 $ref: "#/definitions/IdType"
             startsOn:
-                description: Start of the workflow validity time. The workflow can only be triggered after this time.
                 "$ref" : "#/definitions/DateTimeUNIXTimestamp"
             endsOn:
-                description: End of the workflow validity time. The workflow can only be triggered before this time.
                 "$ref" : "#/definitions/DateTimeUNIXTimestamp"
             status:
-                description: The current status of the workflow
                 "$ref" : "#/definitions/StatusType"
             triggerExpression:
-                description: If this expression evaluates to true once an event arrives, and the workflow is not already in progress, then it will be triggered.
                 "$ref" : "#/definitions/ExpressionType"
             abTest:
-                description: |
-                  The associated AB test of the workflow. The workflow steps can be customized according to the test groups in this AB test.
                 "$ref" : "#/definitions/ABTestRefType"
             steps:
                 type: object
@@ -1065,9 +1052,6 @@ definitions:
       type:
         "$ref": "#/definitions/WorkflowStateType"
       name:
-        description: |
-          The name of the workflow step. This is used as an identifier for this step within
-          the workflow definition.
         "$ref" : "#/definitions/WorkflowStepNameType"
       description:
         type: string
@@ -1245,7 +1229,7 @@ definitions:
     type: object
     properties:
       request:
-        $ref: '#definitions/ReportingRequestType'
+        $ref: '#/definitions/ReportingRequestType'
       groups:
         type: array
         items:
@@ -1254,28 +1238,28 @@ definitions:
       request:
         applicationId: 123e4567-e89b-12d3-a456-426655440000
         workflowId: 123e4567-e89b-12d3-a456-426655440000
-        start: '2017-09-01T12:00:00Z'
-        end:  '2017-09-01T11:00:00Z'
+        start: '2017-09-01T11:00:00Z'
+        end:  '2017-09-01T12:00:00Z'
         aggregation: HOUR
       groups:
         -
           step: Send_Email_Action
           values:
             -
-              - "2018-01-01"
+              - '2017-09-01T11:00:00Z'
               - 100
             -
-              - "2018-01-02"
+              - '2017-09-01T12:00:00Z'
               - 200
 
         -
           step: START
           values:
             -
-              - "2018-01-01"
+              - '2017-09-01T11:00:00Z'
               - 10
             -
-              - "2018-01-02"
+              - '2017-09-01T12:00:00Z'
               - 20
 
 
@@ -1302,11 +1286,11 @@ definitions:
       workflowId:
         type: string
       start:
-        $ref: '#definitions/ISODateTimeType'
+        $ref: '#/definitions/ISODateTimeType'
       end:
-        $ref: '#definitions/ISODateTimeType'
+        $ref: '#/definitions/ISODateTimeType'
       aggregation:
-        $ref: '#definitions/TimeUnitType'
+        $ref: '#/definitions/TimeUnitType'
 
   ISODateTimeType:
     description: ISODateTimeType, ISO8601 date format with optional time part

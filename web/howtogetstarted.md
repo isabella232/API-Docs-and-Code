@@ -128,7 +128,7 @@ request(options, function (error, response, body) {
 });
 ```
 
-If you have used your own email address you should have received a welcome email. Congratulations, you are a now a DataTiger!
+If you have used your own email address you should have received a welcome email. Congratulations, you are now a DataTiger!
 
 If not, please feel free to get in touch with use at help@datatiger.com so that we can help you debug. 
 

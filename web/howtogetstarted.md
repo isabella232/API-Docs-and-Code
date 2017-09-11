@@ -73,10 +73,8 @@ request(options, function (error, response, body) {
 
 2.) UI frontend components
 
-(coming soon)
 
-Here is a sneak pre-view of how they will look like
-
+[Here](http://ui.datatiger.com) is a sneak pre-view of how the UI frontend components will look like. They are connected to our demo instance. Please feel free to create new workflows by clicking the + button at the bottom of the page.
 
 
 3. Sending of events 

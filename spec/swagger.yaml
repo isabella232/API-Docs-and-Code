@@ -48,7 +48,7 @@ info:
     For instance, getting the list of all available applications using curl:
     ```
     curl -X GET \
-    http://preprod.api.datatiger.com/applications \
+    https://preprod.api.datatiger.com/applications \
     -H 'authorization: Bearer token_placeholder' 
     ```
     
@@ -67,7 +67,7 @@ info:
     Here is an simple authentication example with curl:
     ```
       curl -X POST \
-      http://preprod.api.datatiger.com/account/login \
+      https://preprod.api.datatiger.com/account/login \
         -H 'content-type: application/x-www-form-urlencoded' \
         -d 'username=username_placeholder&password=password_placeholder'\
         -c cookieFile
@@ -77,7 +77,7 @@ info:
     applications):
     ```
       curl -X GET \
-      http://preprod.api.datatiger.com/applications \
+      https://preprod.api.datatiger.com/applications \
       -b cookieFile
     ```
     
@@ -222,7 +222,7 @@ info:
 host: preprod.api.datatiger.com
 basePath: /
 schemes:
-  - http
+  - https
 
 tags:
   - name: authentication

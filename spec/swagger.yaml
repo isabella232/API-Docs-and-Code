@@ -6,53 +6,227 @@ info:
 
   title: DataTiger Management API
   description: |
+    
 
-    # Introduction 
+    ## Introduction 
     The Management API allows you to setup and configure a wide range of components:
     * Applications: Every domain (i.e. your company name), can have multiple applications. Each one has a unique name and is identified by a unique ID.  
-    * Workflows: Every application can have multiple workflows. Often our workflows are also refered to as user journeys. Each one has a unique name and is identified by a unique ID.  
+    * Workflows: Every application can have multiple workflows. Often our workflows are also referred to as user journeys. Each one has a unique name and is identified by a unique ID.  
     * A/B Tests: we believe that you should be able to test pretty much everything you are doing, therefore A/B tests can be setup for all steps of a workflow. 
     
-    
 
-    # General API concepts
-    * Identifiers: All managed objects can be uniquelly identified by a plaform generated identifier.
+    ## General API concepts
+    * Identifiers: All managed objects are uniquely identified by a platform generated identifier.
     This is returned when an object is created or whenever it is retrieved from the database.
 
     * Versioning: Several entities (such as the workflows) are immutable entities, as modifying them can lead to unpredicted behaviour (e.g. modifying a workflow while 
     it is executing). Updating such an entity results in a new version, with its own unique identifier. 
 
-    # Authentication
+    ## Authentication
     Most requests need to be authenticated. Management API allows two types of authentication:
       - API Key (Bearer token)
       - Username/Password
       
-    As Swager 2.0 specification cannot properly describe these authentication schemes, please use this description as reference on how the authentication works.    
+    As Swagger 2.0 specification cannot properly describe these authentication schemes, please use this section as a reference on how the authentication works.    
     
     In the following sections that describe the requests, all requests that require authentication will have an optional 'Authorization' header. The API user can either 
     use this header for API token authentication or an authenticated HTTP session for username/password authentication.     
       
-      
-    ## API Key authentication
-    A request can be authenticated using an API token that is (optionally) associated with a user. The 'Authorization' header is used to provide the API token, as follows:
+    ### API Key authentication
+    The API key security model is mainly targeted for backends that use the DataTiger API. Each registered user account 
+    of a client is assigned a unique api key which can be used to uniquely identify the user account. 
+    When a client needs to access the DataTiger API they include the assigned API with each HTTP request to the API.
+
+    The HTTP header 'Authorization' is used to specify that the requestor holds a valid access token. 
+    Every request to the API must include an Authorization header with a value of the following form:
+    
     ```
       Authorization: Bearer <TokenString>
     ```
-    The API token is sufficient to identify and authenticate the user performing the request.
+    The value after 'Bearer' is the actual API key. Note: The header name is *not* case sensitive.
     
-    ## Username/Password authentication
-    Alternatively, username/password authentication can be used to authenticate an HTTP session by performing a POST to the /account/login endpoint.
-    If the authentication is succesfull, a session cookie is stored and all subsequent requests for the same HTTP session are pre-authenticated.
-    The /account/logout endpoint can be used to de-associate the session with the user.
+    For instance, getting the list of all available applications using curl:
+    ```
+    curl -X GET \
+    https://preprod.api.datatiger.com/applications \
+    -H 'authorization: Bearer token_placeholder' 
+    ```
+    
+    ### Username/Password authentication
+    This is the traditional authentication scheme where a user is presented with a login form and is asked to enter a username and a password in order to identify themselves.
+
+    Upon successful login, a session cookie is returned. Any subequent HTTP request can include the cookie in its request headers and the user will be  automatically identified 
+    through the associated server-side session.
+    
+    The username/password pair should be passed by a POST request to the /account/login endpoint.
+    
+    This authentication method is mostly targeted to the DataTiger frontend components. If a customer implements their own authentication, the API key authentication 
+    is more adequate.
+    
+    
+    Here is an simple authentication example with curl:
+    ```
+      curl -X POST \
+      https://preprod.api.datatiger.com/account/login \
+        -H 'content-type: application/x-www-form-urlencoded' \
+        -d 'username=username_placeholder&password=password_placeholder'\
+        -c cookieFile
+    ```
+
+    After the session has been authenticated (session identifier is stored in the cookieFile), it can be used for further requests (e.g. retrieve the list of available
+    applications):
+    ```
+      curl -X GET \
+      https://preprod.api.datatiger.com/applications \
+      -b cookieFile
+    ```
+    
+    ## Workflows
+    The active workflows of an application collectively define how the DataTiger platform reacts to incoming user events.  Each workflow belongs to a single application and has
+    a unique name within that application.
+    
+    ### Workflow activation
+    Workflow activation is controlled by it's status and the trigger expressions. For a workflow to be activated from a user event the following conditions must be true:
+    * The workflow must not be already in progress for that user 
+    * The workflow status must be 'ACTIVE'
+    * The trigger expression must evaluate to true
+    
+    When a workflow is activated, its steps are executed starting from the workflow starting step. The processing continues until the workflow reaches a final state or fails. Depending
+    on the workflow, its execution may require waiting until some action if performed. 
+    
+    ### Trigger expressions
+    Trigger expressions are boolean expressions over the user and event attributes (available attributes and operations are returned by the /datatypes request).
+    Within a trigger expression, an event attribute is referenced using the 'event' prefix and a user attribute with the 'user' prefix.
+    
+    The expressions consist of the following:
+    * AND, OR and NOT operators
+    * parentheses
+    * user and event properties such as 'user.UserId' or 'event.EventType'
+    * Operators: One of ==, >, <, >=, <= 
+    * Literals
+      * Strings: 'strings are enclosed in single quotes'
+      * DateTime: '2011-12-03T10:15:30'. The dateTimes are always expressed in UTC
+      * Boolean: true / false
+      * Integer: 1234, -1234
+      * Float: 1.01
+    * Expressions relative to now
+      * user.LastActiveOn in the last 4 MINUTES
+      
+      
+    A simple example expression is as follows:
+    ```
+      user.LastActiveOn in the last 1 DAYS AND event.eventType == 'UserUpdated'
+    ```
+    
+    
+    ### Workflow steps
+    The workflow steps define what happens after a workflow is activated as a graph of nodes. All nodes share a set of common attributes:
+    * name - gives a user friendly name to a node
+    * description - useful for putting a note about the role of a specific node in the scenario
+    * type - indicates the type of the node
+    * transitions - From each node there's one or more labeled transitions to other nodes within the same scenario definition. This captures this
+      information, like a list of pairs of the form (label, node names) 
+
+    The node type must always be defined, and can be one of the following:
+    * START - Start nodes are a special type of nodes that indicate the starting point of a workflow. There's only one START node per workflow definition and it has the special and reserved name 'START'.
+    * TERMINAL - This node type indicates that the workflow ends at this point, they act like terminal points in the graph stopping any further traversing of the graph of nodes. There can be many TERMINAL 
+      nodes per workflow definition and they can have custom names.
+    * ACTION - This node type represents a webhook action, i.e. that a URL should be invoked as a result of the workflow reaching this step.
+    * WAIT - Represents an unconditional wait action for a specified amount of time.
+    * CONDITION - A condition node acts as a decision point to determine which path the workflow will follow out of multiple alternatives. 
+    * WAIT_ON_CONDITION - A condition that is evaluated multiple times within a given time limit. If at any time the condition becomes true, 
+      then the flow continues along the TRUE transition. Otherwise, if the time limit is passed and the condition is still false, then the FALSE transition is taken.
+    * SENDGRID_EMAIL_ACTION - Action for sending an email through SendGrid.
+     Distinct node types require specific properties to define their actions. All these are defined in the workflow types below.
+     
+     
+    Each type of node has a set of predefined outgoing transitions as follows:
+      
+    * START
+      * OK - The 'OK' transition will be followed unconditionally when encountering a START step. 
+    * TERMINAL: No outgoing transitions are considered when reaching a TERMINAL. Instead the workflow is marked as completed at that point.
+    * ACTION 
+      * OK - Followed when the webhook call has been completed successfully
+      * ERROR - Followed in case the call couldn't be made or we received a 5xx response code
+    * WAIT
+      * TIMEOUT - Followed when the requested delay has been reached.
+    * CONDITION 
+      * TRUE - Followed when the condition evaluates to TRUE
+      * FALSE - Followed when the condition evaluates to FALSE
+      * TIMEOUT - For conditions with a timeout setting, this will be followed when the requested delay has been reached.
+
+     
+    To put everything together here is an example workflow definition in JSON:
+     ```
+        {
+            "name": "Example Email Workflow",
+            "applicationId": 10000,
+            "version": 1,
+            "status": "ACTIVE",
+            "triggerExpression": "event.EventType == 'DemoEmailSend'",
+            "steps": {
+                "START": {
+                    "name": "Start",
+                    "type": "START",
+                    "transitions": {
+                        "OK": "SEND_EMAIL",
+                        "ERROR": "FIN"
+                    }
+                },
+                "SEND_EMAIL": {
+                    "name": "WELCOME_EMAIL",
+                    "type": "SENDGRID_EMAIL_ACTION",
+                    "transitions": {
+                        "OK": "FIN",
+                        "ERROR": "FIN_ERR"
+                    },
+                    "templateId": "sendGrid ID",
+                    "apiKey": "sendGrid API Key",
+                    "emailTo": "${user.Email}",
+                    "emailToName": "${user.FirstName}",
+                    "replyTo": "your@email.com",
+                    "replyToName": "Your Name",
+                    "from": "your@email.com",
+                    "fromName": "DataTiger",
+                    "subject": "Welcome to DataTiger",
+                    "trackOpen": true,
+                    "trackClick": true,
+                    "substitutions": [
+                        {
+                            "token": "%firstName%",
+                            "value": "${user.FirstName}"
+                        }
+                    ],
+                    "sandboxed": false
+                },
+                "FIN": {
+                    "name": "FIN",
+                    "type": "TERMINAL"
+                },
+                "FIN_ERR": {
+                    "name": "FIN_ERR",
+                    "type": "TERMINAL"
+                }
+            }
+        }
+    ```     
+     
+    
+    
+    
+    
+    
     
   version: "1.0.0"
 
 host: preprod.api.datatiger.com
 basePath: /
 schemes:
-  - http
+  - https
 
 tags:
+  - name: authentication
+    description: System health and reporting
   - name: health
     description: System health and reporting
   - name: datatypes
@@ -70,11 +244,13 @@ x-tagGroups:
   - name: System calls
     tags:
       - health
+      - authentication
   - name: User journey management
     tags:
       - applications
       - workflows
       - abtests
+      - reporting
   - name: Data types
     tags:
       - datatypes      
@@ -91,7 +267,7 @@ paths:
         is necessary to know which attributes can be included in workflow condition expressions or
         segmentation expressions.
         Each attribute is identified by a name and a data type. The supported set of data types is
-        specified by the AttributeType enumeration (datatype property of the response).
+        specified by the AttributeType enumeration ('type' property of the response).
       tags:
         - datatypes
 
@@ -125,41 +301,10 @@ paths:
                     "$ref": "#/definitions/OperatorType"
                 additionalProperties:
                   "$ref": "#/definitions/OperatorType"
-          examples:
-            #Example in yaml
-            application/json:
-              userAttributes:
-              - name: LastName
-                type: text
-              - name: AppId
-                type: text
-              - name: UserId
-                type: text
-              eventAttributes:
-              - name: CreatedOn
-                type: datetime
-              - name: EventType
-                type: text
-              operators:
-                integer:
-                - name: Greater than
-                  value: ">"
-                text:
-                - name: Equal to
-                  value: "=="
-                - name: Not equal to
-                  value: "!="
-
-                bool:
-                - name: Equal to
-                  value: "=="
-                - name: Not equal to
-                  value: "!="
-
 
 
 ##################################################################################
-#                      System health and reporting
+#                      System calls
 ##################################################################################
   /ping:
     get:
@@ -173,11 +318,46 @@ paths:
         - application/json
       responses:
         200:
-          description:  If the server is up and running the string "pong" is returned
+          description:  If the server is up and running the string "pong" is returned (including the double quotes)
           schema:
               type: string
 
 
+  /account/login:
+    post:
+      summary: Authenticates an HTTP session using the user credentials (username/password). This can be used as an alternative to the API token authentication.
+      description: |
+        Authenticates the user using a pair of username and password.    
+      tags:
+        - authentication
+      operationId: login
+      produces:
+        - text/plain
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - 
+          in: formData
+          name: username
+          type: string
+          description: The user's username
+          required: true
+        - 
+          in: formData
+          name: password
+          type: string
+          description: The user's password
+          required: true
+        
+      responses:
+        200:
+          description:  Authentication was successful. 
+          schema:
+              type: string
+        401:
+          description:  Unauthorized. Username does not exist or username/password combination is invalid. 
+          schema:
+              type: string
 
 
 ##################################################################################
@@ -216,7 +396,6 @@ paths:
               type: object
               properties:
                 paging:
-                  description: Paging information of the response
                   $ref: '#/definitions/PagingType'
                 items:
                   description: Array of the returned applications
@@ -232,55 +411,6 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
-      x-code-samples:
-        -
-          lang: Node
-          source: |-
-            var http = require("http");
-            
-            var options = {
-              "method": "GET",
-              "hostname": "preprod.api.datatiger.com",
-              "port": null,
-              "path": "/applications",
-              "headers": {
-                "accept": "application/json",
-                "content-type": "application/x-www-form-urlencoded",
-                "cache-control": "no-cache",
-                "postman-token": "7069ebc8-ef18-80b0-b74a-a5ca0bd73489"
-              }
-            };
-            
-            var req = http.request(options, function (res) {
-              var chunks = [];
-            
-              res.on("data", function (chunk) {
-                chunks.push(chunk);
-              });
-            
-              res.on("end", function () {
-                var body = Buffer.concat(chunks);
-                console.log(body.toString());
-              });
-            });
-        -
-          lang: Java
-          source: |-
-            OkHttpClient client = new OkHttpClient();
-            
-            Request request = new Request.Builder()
-              .url("http://preprod.api.datatiger.com/applications")
-              .get()
-              .addHeader("accept", "application/json")
-              .addHeader("content-type", "application/x-www-form-urlencoded")
-              .addHeader("cache-control", "no-cache")
-              .addHeader("postman-token", "a193ffe9-5866-0c9e-ec3e-1ceb7dbdce27")
-              .build();
-            
-            Response response = client.newCall(request).execute(); 
-            
-            
-            
     post:
       summary: Creates a new application
       description: |
@@ -300,7 +430,7 @@ paths:
             "$ref": '#/definitions/CreateApplicationType'
       responses:
         201:
-          description: The application was created succesfully
+          description: The application was created successfully
           schema:
             $ref: '#/definitions/ApplicationType'
           headers:
@@ -422,7 +552,6 @@ paths:
               type: object
               properties:
                 paging:
-                  description: Paging information of the response
                   $ref: '#/definitions/PagingType'
                 items:
                   description: Array of the returned applications
@@ -487,7 +616,7 @@ paths:
     get:
       summary: Get an AB test
       description: |
-        Reuturn an AB test, identified by the AB test ID
+        Return an AB test, identified by the AB test ID
       tags:
         - abtests
       operationId: getABTestOfApplication
@@ -528,9 +657,10 @@ paths:
       description: |
         List the workflows under the specified application, according to the criteria
         specified in the parameters.
-      externalDocs:
-        description: Further information about workflow definitions
-        url: http://www.datatiger.com
+#Commented, until we do have such an information page
+#      externalDocs:
+#        description: Further information about workflow definitions
+#        url: http://www.datatiger.com
       tags:
         - workflows
 
@@ -557,37 +687,12 @@ paths:
               type: object
               properties:
                 paging:
-                  description: Paging information of the response
                   $ref: '#/definitions/PagingType'
                 items:
                   description: Array of the returned applications
                   type: array
                   items:
                     "$ref": '#/definitions/WorkflowType'
-          examples:
-            #Example in yaml
-            application/json:
-              name: Test workflow
-              id: adsjfsijdiujqw984u
-              application:
-                name: Test application
-              version: 2
-              startsOn: 1451606400000
-              endsOn: 1454284800000
-              status: ACTIVE
-              triggerExpression: "event.EventType == 'Installed'"
-              abTest:
-                name: Test AB test 1
-                id: 1
-              steps:
-                StartStep:
-                  name: StartStep
-                  type: START
-                  transitions:
-                    "OK": "FinStep"
-                FinStep:
-                  name: FinStep
-                  type: END
         400:
           description: Malformed request
           schema:
@@ -679,7 +784,7 @@ paths:
 
       summary: Get a unique workflow
       description: |
-        Reuturn an application workflow, identified by the workflow unique identifier
+        Return an application workflow, identified by the workflow unique identifier
       tags:
         - workflows
       operationId: getWorkflowOfApplication
@@ -706,7 +811,7 @@ paths:
 
 ## Reporting Endpoints
 
-  /applications/{applicationId}/workflows/{workflowId}/reports:
+  /applications/{application}/workflows/{workflow}/reports:
 
     get:
       summary: Returns the number of executions of each step of a given workflow and time period
@@ -717,11 +822,11 @@ paths:
 
       operationId: reportWorkflow
       parameters:
-        - "$ref": "#/parameters/applicationId"
-        - "$ref": "#/parameters/workflowId"
-        - "$ref": "#/parameters/startFilter"
-        - "$ref": "#/parameters/endFilter"
-        - "$ref": "#/parameters/aggregationFilter"
+        - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/workflowParam"
+        - "$ref": "#/parameters/reportingFromFilter"
+        - "$ref": "#/parameters/reportingUntilFilter"
+        - "$ref": "#/parameters/reportingAggregationFilter"
       produces:
         - application/json
       responses:
@@ -734,24 +839,6 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
-
-
-parameters:
-
-###Path parameters
-    applicationId:
-        name: applicationId
-        in: path
-        required: true
-        type: string
-        description: The identifier of the application
-
-    workflowId:
-        name: workflowId
-        in: path
-        required: true
-        type: string
-        description: The identifier for the workflow
 
 ###Generic filtering parameters
 
@@ -778,7 +865,6 @@ definitions:
     type: object
     properties:
       id:
-        description: The auto-generated unique identifier of the object
         $ref: '#/definitions/IdType'
 
   VersionType:
@@ -789,7 +875,6 @@ definitions:
     type: object
     properties:
       version:
-        description: The auto-generated version of this object
         $ref: '#/definitions/VersionType'
 
   ErrorType:
@@ -837,9 +922,6 @@ definitions:
     type: string
     description: |
       The status of the entity. Not all values might be relevant for all entities.
-        * ACTIVE - Entity is currently active
-        * INACTIVE - Entity is currently inactive
-        * COMPLETED - ....
     enum:
       - ACTIVE
       - INACTIVE
@@ -858,7 +940,6 @@ definitions:
         description: the name of the attribute
       type:
         $ref: '#/definitions/AttributeType'
-        description: the data type of the attribute
 
   AttributeType:
     description: Enumeration of all supported data types for user and event attributes
@@ -869,8 +950,6 @@ definitions:
       - integer
       - float
       - datetime
-
-
 
   OperatorType:
     type: array
@@ -887,23 +966,7 @@ definitions:
         type: string
         description: a value that uniquely identifies this operator
 
-  OperatorEnumType:
-    description: Enumeration of all supported operators within segmentation and condition expressions
-    type: string
-    enum:
-      - bool
-      - text
-      - integer
-      - float
-      - datetime
 
-  DateTimeUNIXTimestamp:
-    type: string
-    description: "Date and time formated as a UNIX timestamp. A positive number that specifies the number of seconds since the epoch (1970-01-01 00:00:00 UTC). Up to 6 decimal places (microsecond precision) are preserved."
-
-  DateUNIXTimestamp:
-    type: string
-    description: "A date formated as a UNIX timestamp. A positive number that specifies the number of seconds since the epoch (1970-01-01 00:00:00 UTC). Up to 6 decimal places (microsecond precision) are preserved."
 
   PropertyValueType:
     type: string
@@ -917,12 +980,11 @@ definitions:
                 - name
         properties:
             name:
-                description: The name of the application
                 "$ref" : "#/definitions/NameType"
 
 
   ApplicationType:
-    description: Full populated application information
+    description: Fully populated application information
     allOf:
       - $ref: '#/definitions/CreateApplicationType'
       - $ref: '#/definitions/ObjectWithIdType'
@@ -949,13 +1011,11 @@ definitions:
       - testGroups
     properties:
       name:
-        description: The name of the AB test
         "$ref" : "#/definitions/NameType"
       description:
         description: The user description for this AB test
         type: string
       application:
-        description: Reference to the associated application
         $ref: "#/definitions/IdType"
       seed:
         description: A seed for the AB test. AB tests with the same seeds and test sizes will result in groups with the exact same users.
@@ -1006,8 +1066,6 @@ definitions:
     type: string
     description: the name of the step. This is used to refer to the step within the workflow.
 
-
-
 ###### Workflow complex types
 
   CreateWorkflowType:
@@ -1020,29 +1078,14 @@ definitions:
                 - steps
         properties:
             name:
-                description: The name of the workflow
                 "$ref" : "#/definitions/NameType"
-            application:
-                description: |
-                  The associated application id. This is not required, as the application reference is part of the URL. If it is specified, however,
-                  it should refer to the same application as the URL parameter.
-
-                $ref: "#/definitions/IdType"
-            startsOn:
-                description: Start of the workflow validity time. The workflow can only be triggered after this time.
-                "$ref" : "#/definitions/DateTimeUNIXTimestamp"
-            endsOn:
-                description: End of the workflow validity time. The workflow can only be triggered before this time.
-                "$ref" : "#/definitions/DateTimeUNIXTimestamp"
+            applicationId:
+                "$ref": "#/definitions/IdType"
             status:
-                description: The current status of the workflow
                 "$ref" : "#/definitions/StatusType"
             triggerExpression:
-                description: If this expression evaluates to true once an event arrives, and the workflow is not already in progress, then it will be triggered.
                 "$ref" : "#/definitions/ExpressionType"
             abTest:
-                description: |
-                  The associated AB test of the workflow. The workflow steps can be customized according to the test groups in this AB test.
                 "$ref" : "#/definitions/ABTestRefType"
             steps:
                 type: object
@@ -1083,9 +1126,6 @@ definitions:
       type:
         "$ref": "#/definitions/WorkflowStateType"
       name:
-        description: |
-          The name of the workflow step. This is used as an identifier for this step within
-          the workflow definition.
         "$ref" : "#/definitions/WorkflowStepNameType"
       description:
         type: string
@@ -1128,21 +1168,26 @@ definitions:
       - $ref : '#/definitions/WorkflowStepType'
   ACTION:
     description: |
-      An action peforming workflow step. The extra parameters customize the action.
+      An action performing workflow step. The extra parameters customize the action.
     allOf:
       - $ref : '#/definitions/WorkflowStepType'
       - type: object
         properties:
           url:
             type: string
-            description: The URL of the action handler
+            description: the URL to invoke 
           numRetries:
             type: number
             format: int32
             description: Number of retries before permanent failure
           params:
             type: object
-            description: parameters to pass to the action
+            description: |
+              the parameters to include in the invocation. This can take two forms:
+              *  A list of user attributes names (named 'attributes') to include as <name>=<value> pairs in the HTTP request. 
+              *  Hardcoded name-value pairs. The values can also contain interpolation tokens of the form ${<ref>} where ref is a reference to a user attribute meaning 
+                 that the whole token will be replaced by the value of the referenced attribute.  E.g. the value "Hello ${User.FirstName}" will be interpolated to 
+                 "Hello Fran" if User.FirstName was "Fran" for the user associated with this workflow instance.
             properties:
               parameterName:
                 type: string
@@ -1219,10 +1264,10 @@ definitions:
           timeUnit:
             type: string
             enum:
-              - hour
-              - day
-              - week
-              - month
+              - HOURS
+              - DAYS
+              - WEEKS
+              - MONTHS
             description: Specifies the time unit
         required:
           - duration
@@ -1242,7 +1287,7 @@ definitions:
         properties:
           expression:
             type: string
-            description: The boolean expression to evaluate
+            description: the expression to evaluate. This has the same semantics as the workflow trigger expression.
           duration:
             type: number
             format: int32
@@ -1250,10 +1295,10 @@ definitions:
           timeUnit:
             type: string
             enum:
-              - hour
-              - day
-              - week
-              - month
+              - HOURS
+              - DAYS
+              - WEEKS
+              - MONTHS
             description: Specifies the time unit
         required:
           - expression
@@ -1263,7 +1308,7 @@ definitions:
     type: object
     properties:
       request:
-        $ref: '#definitions/ReportingRequestType'
+        $ref: '#/definitions/ReportingRequestType'
       groups:
         type: array
         items:
@@ -1272,28 +1317,28 @@ definitions:
       request:
         applicationId: 123e4567-e89b-12d3-a456-426655440000
         workflowId: 123e4567-e89b-12d3-a456-426655440000
-        start: '2017-09-01T12:00:00Z'
-        end:  '2017-09-01T11:00:00Z'
+        start: '2017-09-01T11:00:00Z'
+        end:  '2017-09-01T12:00:00Z'
         aggregation: HOUR
       groups:
         -
           step: Send_Email_Action
           values:
             -
-              - "2018-01-01"
+              - '2017-09-01T11:00:00Z'
               - 100
             -
-              - "2018-01-02"
+              - '2017-09-01T12:00:00Z'
               - 200
 
         -
           step: START
           values:
             -
-              - "2018-01-01"
+              - '2017-09-01T11:00:00Z'
               - 10
             -
-              - "2018-01-02"
+              - '2017-09-01T12:00:00Z'
               - 20
 
 
@@ -1320,14 +1365,14 @@ definitions:
       workflowId:
         type: string
       start:
-        $ref: '#definitions/ISODateTimeType'
+        $ref: '#/definitions/ISODateTimeType'
       end:
-        $ref: '#definitions/ISODateTimeType'
+        $ref: '#/definitions/ISODateTimeType'
       aggregation:
-        $ref: '#definitions/TimeUnitType'
+        $ref: '#/definitions/TimeUnitType'
 
   ISODateTimeType:
-    description: ISODateTimeType, ISO8601 date format with optional time part
+    description: ISODateTimeType, ISO8601 date format with optional time part. For instance, 1970-01-18T09:19:41.204+0000
     type: string
     format: date-time
 
@@ -1342,7 +1387,7 @@ definitions:
 ##################################################################################
 
 parameters:
-###Authenticatiokn
+###Authentication
     authParam:
         name: Authorization
         in: header
@@ -1395,11 +1440,11 @@ parameters:
         name: status
         in: query
         required: false
-        description: One or more statuses return. If not specified, then all states are returned.
+        description: One or more states to return. If not specified, then all states are returned.
         type: array
         items:
             type: string
-            enum:  #Params sections cannot access definitions section in swager 2.0 apparently. So we have to re-define enums here!!!
+            enum:  #Params sections cannot access definitions section in swagger 2.0 apparently. So we have to re-define enums here!!!
               - ACTIVE
               - INACTIVE
               - COMPLETED
@@ -1428,7 +1473,7 @@ parameters:
 
     WorkflowSortingParam:
       name: orderby
-      description: Fields to sort by. Field name is for ascending order, -fieldName for descending order
+      description: Fields to sort by. Field name is for ascending order, -fieldName (prefixed by a '-') is for descending order
       in: query
       type: array
       items:
@@ -1438,10 +1483,6 @@ parameters:
           - '-name'
           - version
           - -version
-          - startsOn
-          - -startsOn
-          - endsOn
-          - -endsOn
           - status
           - -status
 
@@ -1492,23 +1533,24 @@ parameters:
           - '-name'
 
 
-    startFilter:
-        name: start
+# Reporting parameters
+    reportingFromFilter:
+        name: from
         in: query
         required: true
-        description: The day from which reporting should begin, inclusively.
+        description: A ISO-8601 date that specifies the starting point from which executions will be returned
         type: string
         format: date-time
 
-    endFilter:
-        name: end
+    reportingUntilFilter:
+        name: until
         in: query
         required: true
-        description: The day at which reporting should end, inclusively.
+        description: A ISO-8601 date-time that specifies the cut-off point after which executions will not be reported
         type: string
         format: date-time
 
-    aggregationFilter:
+    reportingAggregationFilter:
       name: aggregate
       in: query
       required: false

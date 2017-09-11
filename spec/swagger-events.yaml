@@ -39,7 +39,7 @@ info:
     
     ```
     curl -X POST \
-      https://6f92bwvk0k.execute-api.eu-west-1.amazonaws.com/LATEST/events \
+      https://preprod-events.api.datatiger.com/events \
       -H 'content-type: application/json' \
       -H 'x-api-key: ...replaceTheApiKeyHere...' \
       -d '{
@@ -66,8 +66,8 @@ info:
     
   version: "1.0.0"
 
-host: f92bwvk0k.execute-api.eu-west-1.amazonaws.com
-basePath: /LATEST
+host: preprod-events.api.datatiger.com
+basePath: /
 schemes:
   - https
 

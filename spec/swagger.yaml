@@ -880,18 +880,40 @@ definitions:
   ErrorType:
     type: object
     required:
-      - errorId
+      - errorType
       - message
     properties:
-      errorId:
+      errorType:
+        description: The top level type of the error. The type of errors continuously expands, so new enum values may be added often.
         type: string
-        description: A unique identifier of the error type
+        enum:
+          - INTERNAL_SERVER_ERROR
+          - CREATE_FAILED
+          - UPDATE_FAILED
+          - ENTITY_NOT_FOUND
+          - MALFORMED_REQUEST
+          - INVALID_REQUEST 
+      errorSubtype:
+        type: string
+        description: An optional subtype of the error type. This can be useful to identify methods to automatically handle/display the error.
+        enum:
+        - UNKNOWN
+        - UNPARSEABLE_REQUEST
+        - MISSING_REQUIRED_FIELD
+        - UNEXPECTED_FIELD
+        - INVALID_REFRENCE
+        - INVALID_NAME
+        - CYCLICAL_WORKFLOW
+      errorPath:
+        type: string
+        description: |
+          A simple JSONPath representation of the error location. The format is of the form "$.keyName.keyName.....propertyName". Does not support
+          arrays at the moment. The context (represented by $) is always the root level object that was sent by the caller.
       message:
         type: string
-        description: A short message describing what went wrong
-      description:
-        type: string
-        description: Further details on the error
+        description: |
+          A more detailed, human readable, message containing more details about the error. If we cannot extract the error
+          location in the 'errorPath' format, this message may contain some human readable location information. 
 
   PagingType:
     type: object

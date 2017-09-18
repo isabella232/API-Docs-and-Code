@@ -740,6 +740,47 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
+
+  /applications/{application}/workflows/actions/validate:
+    parameters:
+      - "$ref": "#/parameters/applicationParam"
+    post:
+      summary: Validates a new workflow.
+      description: |
+        Validates a new workflow without performing any modifications to the database.
+      tags:
+        - workflows
+      operationId: validateWorkflowOfApplications
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/CreateWorkflowType'
+      responses:
+        200:
+          description: The workflow is valid
+          schema:
+            $ref: '#/definitions/WorkflowType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+
+
   /applications/{application}/workflows/{workflow}:
     parameters:
         - "$ref": "#/parameters/applicationParam"

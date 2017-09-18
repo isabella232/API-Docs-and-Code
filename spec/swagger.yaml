@@ -1142,6 +1142,7 @@ definitions:
       - CONDITION
       - WAIT
       - SENDGRID_EMAIL_ACTION
+      - AB_SPLIT
 
   ExpressionType:
     type: string
@@ -1172,8 +1173,6 @@ definitions:
                 "$ref" : "#/definitions/StatusType"
             triggerExpression:
                 "$ref" : "#/definitions/ExpressionType"
-            abTest:
-                "$ref" : "#/definitions/ABTestRefType"
             steps:
                 type: object
                 description: |
@@ -1202,8 +1201,7 @@ definitions:
   WorkflowStepType:
     type: object
     description: |
-      Generic workflow step definition for all types of steps. The 'concrete' definitions should
-      be one of: START, ACTION, SENDGRID_EMAIL_ACTION, TERMINAL and CONDITION. These extend this definition by adding
+      Generic workflow step definition for all types of steps. These extend this definition by adding
       extra properties when necessary.
     discriminator: type
     required:
@@ -1225,27 +1223,6 @@ definitions:
             "$ref": "#/definitions/WorkflowStepNameType"
         additionalProperties:
             "$ref": "#/definitions/WorkflowStepNameType"
-
-      AB:
-        type: object
-        description: Map of an AB test name to overrides for any of the step specific properties
-        properties:
-          abTestName:
-            type: object
-            description: Map of property name to the overriden value
-            properties:
-              propertyName:
-                "$ref" : "#/definitions/PropertyValueType"
-            additionalProperties:
-                "$ref" : "#/definitions/PropertyValueType"
-        additionalProperties:
-          type: object
-          description: Map of property name to the overriden value
-          properties:
-            propertyName:
-              "$ref" : "#/definitions/PropertyValueType"
-          additionalProperties:
-              "$ref" : "#/definitions/PropertyValueType"
 
   #This has to be exactly the same as the value of the workflowStateType
   START:
@@ -1364,6 +1341,7 @@ definitions:
     description: Workflow ending step
     allOf:
       - $ref : '#/definitions/WorkflowStepType'
+
   CONDITION:
     description: |
       A conditional step. Parameters:
@@ -1389,6 +1367,22 @@ definitions:
             description: Specifies the time unit
         required:
           - expression
+
+  AB_SPLIT:
+    description: |
+      Splits the workflow according to the test group in which the user belongs to. Parameters:
+      * abTestId: The ID of the A/B test associated with this split. The user will be classified to a test group or the control group. 
+      The transition taken from this step will be the one whose name matches the test group in which the user was classified. If the
+      user was classified as being part of the control group then the corresponding transition will be the one named 'Control'.
+    allOf:
+      - $ref : '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          abTestId:
+            type: string
+            description: The ID of the A/B test associated with this split
+        required:
+          - abTestId
 
 
   ReportingResponseType:

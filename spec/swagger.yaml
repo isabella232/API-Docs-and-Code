@@ -776,6 +776,30 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorType'
+    delete:
+      summary: Deletes a workflow.
+      description: |
+        Deletes an existing workflow. If a workflow is deleted while currently active for a user, it will be executed as normal.
+      tags:
+        - workflows
+      operationId: deleteWorkflow
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - test/plain
+      responses:
+        204:
+          description: The workflow was deleted succesfully
+          schema:
+            type: string
+        404:
+          description: The workflow was not found
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
 
 
 #### getWorkflowOfApplication

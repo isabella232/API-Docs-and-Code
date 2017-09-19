@@ -740,6 +740,47 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
+
+  /applications/{application}/workflows/actions/validate:
+    parameters:
+      - "$ref": "#/parameters/applicationParam"
+    post:
+      summary: Validates a new workflow.
+      description: |
+        Validates a new workflow without performing any modifications to the database.
+      tags:
+        - workflows
+      operationId: validateWorkflowOfApplications
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/CreateWorkflowType'
+      responses:
+        200:
+          description: The workflow is valid
+          schema:
+            $ref: '#/definitions/WorkflowType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+
+
   /applications/{application}/workflows/{workflow}:
     parameters:
         - "$ref": "#/parameters/applicationParam"
@@ -770,6 +811,30 @@ paths:
             $ref: '#/definitions/WorkflowType'
         400:
           description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+    delete:
+      summary: Deletes a workflow.
+      description: |
+        Deletes an existing workflow. If a workflow is deleted while currently active for a user, it will be executed as normal.
+      tags:
+        - workflows
+      operationId: deleteWorkflow
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - test/plain
+      responses:
+        204:
+          description: The workflow was deleted succesfully
+          schema:
+            type: string
+        404:
+          description: The workflow was not found
           schema:
             $ref: '#/definitions/ErrorType'
         default:
@@ -880,18 +945,40 @@ definitions:
   ErrorType:
     type: object
     required:
-      - errorId
+      - errorType
       - message
     properties:
-      errorId:
+      errorType:
+        description: The top level type of the error. The type of errors continuously expands, so new enum values may be added often.
         type: string
-        description: A unique identifier of the error type
+        enum:
+          - INTERNAL_SERVER_ERROR
+          - CREATE_FAILED
+          - UPDATE_FAILED
+          - ENTITY_NOT_FOUND
+          - MALFORMED_REQUEST
+          - INVALID_REQUEST 
+      errorSubtype:
+        type: string
+        description: An optional subtype of the error type. This can be useful to identify methods to automatically handle/display the error.
+        enum:
+        - UNKNOWN
+        - UNPARSEABLE_REQUEST
+        - MISSING_REQUIRED_FIELD
+        - UNEXPECTED_FIELD
+        - INVALID_REFRENCE
+        - INVALID_NAME
+        - CYCLICAL_WORKFLOW
+      errorPath:
+        type: string
+        description: |
+          A simple JSONPath representation of the error location. The format is of the form "$.keyName.keyName.....propertyName". Does not support
+          arrays at the moment. The context (represented by $) is always the root level object that was sent by the caller.
       message:
         type: string
-        description: A short message describing what went wrong
-      description:
-        type: string
-        description: Further details on the error
+        description: |
+          A more detailed, human readable, message containing more details about the error. If we cannot extract the error
+          location in the 'errorPath' format, this message may contain some human readable location information. 
 
   PagingType:
     type: object
@@ -1055,6 +1142,7 @@ definitions:
       - CONDITION
       - WAIT
       - SENDGRID_EMAIL_ACTION
+      - AB_SPLIT
 
   ExpressionType:
     type: string
@@ -1085,8 +1173,6 @@ definitions:
                 "$ref" : "#/definitions/StatusType"
             triggerExpression:
                 "$ref" : "#/definitions/ExpressionType"
-            abTest:
-                "$ref" : "#/definitions/ABTestRefType"
             steps:
                 type: object
                 description: |
@@ -1115,8 +1201,7 @@ definitions:
   WorkflowStepType:
     type: object
     description: |
-      Generic workflow step definition for all types of steps. The 'concrete' definitions should
-      be one of: START, ACTION, SENDGRID_EMAIL_ACTION, TERMINAL and CONDITION. These extend this definition by adding
+      Generic workflow step definition for all types of steps. These extend this definition by adding
       extra properties when necessary.
     discriminator: type
     required:
@@ -1138,27 +1223,6 @@ definitions:
             "$ref": "#/definitions/WorkflowStepNameType"
         additionalProperties:
             "$ref": "#/definitions/WorkflowStepNameType"
-
-      AB:
-        type: object
-        description: Map of an AB test name to overrides for any of the step specific properties
-        properties:
-          abTestName:
-            type: object
-            description: Map of property name to the overriden value
-            properties:
-              propertyName:
-                "$ref" : "#/definitions/PropertyValueType"
-            additionalProperties:
-                "$ref" : "#/definitions/PropertyValueType"
-        additionalProperties:
-          type: object
-          description: Map of property name to the overriden value
-          properties:
-            propertyName:
-              "$ref" : "#/definitions/PropertyValueType"
-          additionalProperties:
-              "$ref" : "#/definitions/PropertyValueType"
 
   #This has to be exactly the same as the value of the workflowStateType
   START:
@@ -1277,6 +1341,7 @@ definitions:
     description: Workflow ending step
     allOf:
       - $ref : '#/definitions/WorkflowStepType'
+
   CONDITION:
     description: |
       A conditional step. Parameters:
@@ -1302,6 +1367,22 @@ definitions:
             description: Specifies the time unit
         required:
           - expression
+
+  AB_SPLIT:
+    description: |
+      Splits the workflow according to the test group in which the user belongs to. Parameters:
+      * abTestId: The ID of the A/B test associated with this split. The user will be classified to a test group or the control group. 
+      The transition taken from this step will be the one whose name matches the test group in which the user was classified. If the
+      user was classified as being part of the control group then the corresponding transition will be the one named 'Control'.
+    allOf:
+      - $ref : '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          abTestId:
+            type: string
+            description: The ID of the A/B test associated with this split
+        required:
+          - abTestId
 
 
   ReportingResponseType:

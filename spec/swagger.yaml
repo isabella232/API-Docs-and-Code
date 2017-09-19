@@ -949,36 +949,55 @@ definitions:
       - message
     properties:
       errorType:
-        description: The top level type of the error. The type of errors continuously expands, so new enum values may be added often.
-        type: string
-        enum:
-          - INTERNAL_SERVER_ERROR
-          - CREATE_FAILED
-          - UPDATE_FAILED
-          - ENTITY_NOT_FOUND
-          - MALFORMED_REQUEST
-          - INVALID_REQUEST 
-      errorSubtype:
-        type: string
-        description: An optional subtype of the error type. This can be useful to identify methods to automatically handle/display the error.
-        enum:
-        - UNKNOWN
-        - UNPARSEABLE_REQUEST
-        - MISSING_REQUIRED_FIELD
-        - UNEXPECTED_FIELD
-        - INVALID_REFRENCE
-        - INVALID_NAME
-        - CYCLICAL_WORKFLOW
-      errorPath:
-        type: string
-        description: |
-          A simple JSONPath representation of the error location. The format is of the form "$.keyName.keyName.....propertyName". Does not support
-          arrays at the moment. The context (represented by $) is always the root level object that was sent by the caller.
+        $ref: '#/definitions/ErrorTypeEnum'
       message:
         type: string
         description: |
-          A more detailed, human readable, message containing more details about the error. If we cannot extract the error
-          location in the 'errorPath' format, this message may contain some human readable location information. 
+          A human readable message containing more details about the error.
+      innerErrors:
+        description: Details about what caused this error
+        type: array
+        items: 
+          type: object
+          required:
+            - errorType
+            - message
+          properties:
+            errorType:
+              $ref: '#/definitions/ErrorTypeEnum'
+            errorSubtype:
+              type: string
+              description: An optional subtype of the error type. This can be useful to identify methods to automatically handle/display the error.
+              enum:
+              - UNKNOWN
+              - UNPARSEABLE_REQUEST
+              - MISSING_REQUIRED_FIELD
+              - UNEXPECTED_FIELD
+              - INVALID_REFRENCE
+              - INVALID_NAME
+              - CYCLICAL_WORKFLOW
+            errorPath:
+              type: string
+              description: |
+                A simple JSONPath representation of the error location. The format is of the form "$.keyName.keyName.....propertyName". Does not support
+                arrays at the moment. The context (represented by $) is always the root level object that was sent by the caller.
+            message:
+              type: string
+              description: |
+                A more human readable message containing more details about the error. If we cannot extract the error
+                location in the 'errorPath' format, this message may contain some human readable location information.
+
+  ErrorTypeEnum:
+    description: The top level type of the error. The type of errors continuously expands, so new enum values may be added often.
+    type: string
+    enum: 
+      - INTERNAL_SERVER_ERROR
+      - CREATE_FAILED
+      - UPDATE_FAILED
+      - ENTITY_NOT_FOUND
+      - MALFORMED_REQUEST
+      - INVALID_REQUEST 
+
 
   PagingType:
     type: object

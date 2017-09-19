@@ -16,6 +16,7 @@ The key for each workflow is the "trigger". It determines the event which trigge
 
 The code below shows an example of a demo workflow that emails the user a welcome email after a user "welcome" event type has been sent. Please replace the <ApiToken> in the HTTP headers with your own DataTiger Management API key. 
 
+
 ```js
 var request = require("request");
 

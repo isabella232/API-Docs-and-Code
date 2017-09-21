@@ -137,6 +137,7 @@ info:
     * WAIT_ON_CONDITION - A condition that is evaluated multiple times within a given time limit. If at any time the condition becomes true, 
       then the flow continues along the TRUE transition. Otherwise, if the time limit is passed and the condition is still false, then the FALSE transition is taken.
     * SENDGRID_EMAIL_ACTION - Action for sending an email through SendGrid.
+    * SNS_PUSH_ACTION - Action for sending Push notifications using Amazon SNS
      Distinct node types require specific properties to define their actions. All these are defined in the workflow types below.
      
      
@@ -1087,6 +1088,12 @@ definitions:
         properties:
             name:
                 "$ref" : "#/definitions/NameType"
+            androidSnsApplicationArn:
+                type: string
+                description: (For the SNS Push action) The SNS ARN of the GCM application for sending Push notifications.
+            iosSnsApplicationArn:
+                type: string
+                description: (For the SNS Push action) The SNS ARN of the IOS application for sending Push notifications.
 
 
   ApplicationType:
@@ -1161,6 +1168,7 @@ definitions:
       - CONDITION
       - WAIT
       - SENDGRID_EMAIL_ACTION
+      - SNS_PUSH_ACTION
       - AB_SPLIT
 
   ExpressionType:
@@ -1278,6 +1286,27 @@ definitions:
                 type: string
         required:
           - url
+  
+  SNS_PUSH_ACTION:
+    description: |
+      An action for sending Push notifications using Amazon SNS. At least one of the androidRegistrationId or iosDeviceToken must be specified. Ideally both should be provided to allow 
+      sending push notifications to both IOS and Android users.
+    allOf:
+      - $ref : '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          message:
+            type: string
+            description: The message in the notification body
+          androidRegistrationId:
+            type: string
+            description: The GCM registration id for the user. This will normally be filled with an expression pointint to a user property that contains the registration id.
+          iosDeviceToken:
+            type: string
+            description: The IOS device token for the user. This will normally be filled with an expression pointing to a user property that contains the device token.
+        required:
+          - message
+  
   
   SENDGRID_EMAIL_ACTION:
     description: |

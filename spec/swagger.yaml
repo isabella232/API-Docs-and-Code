@@ -892,6 +892,8 @@ paths:
         - "$ref": "#/parameters/reportingFromFilter"
         - "$ref": "#/parameters/reportingUntilFilter"
         - "$ref": "#/parameters/reportingAggregationFilter"
+      consumes:
+        - application/x-www-form-urlencoded
       produces:
         - application/json
       responses:

@@ -876,7 +876,7 @@ paths:
 
 ## Reporting Endpoints
 
-  /applications/{application}/workflows/{workflow}/reports:
+  /applications/{application}/workflows/{workflow}/reporting:
 
     get:
       summary: Returns the number of executions of each step of a given workflow and time period
@@ -1651,7 +1651,7 @@ parameters:
         format: date-time
 
     reportingAggregationFilter:
-      name: aggregate
+      name: aggregation
       in: query
       required: false
       type: string

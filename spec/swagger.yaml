@@ -877,7 +877,7 @@ paths:
 
 ## Reporting Endpoints
 
-  /applications/{application}/workflows/{workflow}/reports:
+  /applications/{application}/workflows/{workflow}/reporting:
 
     get:
       summary: Returns the number of executions of each step of a given workflow and time period
@@ -893,6 +893,8 @@ paths:
         - "$ref": "#/parameters/reportingFromFilter"
         - "$ref": "#/parameters/reportingUntilFilter"
         - "$ref": "#/parameters/reportingAggregationFilter"
+      consumes:
+        - application/x-www-form-urlencoded
       produces:
         - application/json
       responses:
@@ -1170,6 +1172,7 @@ definitions:
       - SENDGRID_EMAIL_ACTION
       - SNS_PUSH_ACTION
       - AB_SPLIT
+      - SNS_SMS
 
   ExpressionType:
     type: string
@@ -1384,6 +1387,31 @@ definitions:
         required:
           - duration
           - timeUnit
+
+  SNS_SMS:
+    description: Sends a SMS through Amazon's SNS service
+    allOf:
+      - $ref : '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          phone:
+            type: string
+            description: The phone number where the SMS will be sent. This must include the country code.
+          message:
+            type: string
+            description: The text of the SMS message
+          maxPrice:
+            type: number
+            format: float
+            description: |
+              A double that specifies an upper limit on the price for sending this message. If a limit is specified, then SNS will cancel the delivery if the carrier is about to charge more than that.
+              This is specified always in USD.
+          senderId:
+            type: string
+            description: A text to appear as the sender of the SMS. This is supported in some countries, not all.
+        required:
+          - phone
+          - message
 
   TERMINAL:
     description: Workflow ending step
@@ -1680,7 +1708,7 @@ parameters:
         format: date-time
 
     reportingAggregationFilter:
-      name: aggregate
+      name: aggregation
       in: query
       required: false
       type: string

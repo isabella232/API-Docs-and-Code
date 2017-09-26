@@ -165,8 +165,9 @@ info:
             "version": 1,
             "status": "ACTIVE",
             "triggerExpression": "event.EventType == 'DemoEmailSend'",
-            "steps": {
-                "START": {
+            "steps": [
+               {
+                    "id": "START",
                     "name": "Start",
                     "type": "START",
                     "transitions": {
@@ -174,7 +175,8 @@ info:
                         "ERROR": "FIN"
                     }
                 },
-                "SEND_EMAIL": {
+                {
+                    "id" : "SEND_EMAIL",
                     "name": "WELCOME_EMAIL",
                     "type": "SENDGRID_EMAIL_ACTION",
                     "transitions": {
@@ -200,15 +202,17 @@ info:
                     ],
                     "sandboxed": false
                 },
-                "FIN": {
+                {
+                    "id": "FIN",
                     "name": "FIN",
                     "type": "TERMINAL"
                 },
-                "FIN_ERR": {
+                {
+                    "id": "FIN_ERR",
                     "name": "FIN_ERR",
                     "type": "TERMINAL"
                 }
-            }
+            ]
         }
     ```     
      
@@ -820,6 +824,7 @@ paths:
             $ref: '#/definitions/ErrorType'
     delete:
       summary: Deletes a workflow.
+
       description: |
         Deletes an existing workflow. If a workflow is deleted while currently active for a user, it will be executed as normal.
       tags:
@@ -1204,14 +1209,12 @@ definitions:
             triggerExpression:
                 "$ref" : "#/definitions/ExpressionType"
             steps:
-                type: object
-                description: |
-                  A map of all the workflow steps. It's structured as a map of the
-                  step name to the step definition.
-                properties:
-                  stepName:
-                    $ref: '#/definitions/WorkflowStepType'
-
+              type: array
+              description: |
+                A map of all the workflow steps. It's structured as a map of the
+                step name to the step definition.
+              items:
+                "$ref": '#/definitions/WorkflowStepType'
 
   WorkflowType:
     description: Full populated workflow type, including the identifier and version number.

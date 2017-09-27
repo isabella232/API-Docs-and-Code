@@ -234,6 +234,8 @@ tags:
     description: Supported data types, event and user schema
   - name: applications
     description: Management of applications
+  - name: settings
+    description: Management of settin gs
   - name: abtests
     description: Management of AB tests
   - name: workflows
@@ -359,6 +361,83 @@ paths:
           description:  Unauthorized. Username does not exist or username/password combination is invalid. 
           schema:
               type: string
+
+
+
+##################################################################################
+#                      Client Accounts
+##################################################################################
+
+  /clientaccounts/{clientAccount}:
+    parameters:
+        - "$ref": "#/parameters/clientAccountParam"
+        - "$ref": "#/parameters/authParam"
+        
+###Update an existing client account
+    put:
+      summary: Updates a client account.
+      description: |
+        Updates the client wide settings.
+      tags:
+        - settings
+      operationId: updateClientAccount
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/ClientAccountType'
+      responses:
+        200:
+          description: The client account was updated successfully
+          schema:
+            $ref: '#/definitions/ClientAccountType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+#### Get information about a client account
+
+    get:
+
+      summary: Get information about a client account
+      description: |
+        Return all the client wide settings of the requested client account
+      tags:
+        - settings
+      operationId: getClientAccount
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The client account
+          schema:
+             "$ref": '#/definitions/ClientAccountType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The client account with the specified identifier does not exist.
+          schema:
+            $ref: '#/definitions/ErrorType'
+        500:
+          description: The update failed due to internal server error
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
 
 
 ##################################################################################
@@ -640,6 +719,29 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorType'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ##################################################################################
@@ -1080,22 +1182,70 @@ definitions:
   PropertyValueType:
     type: string
 
-### Application  types
+### Client account types
 
-  CreateApplicationType:
+  ClientAccountCreationType:
         type: object
-        description: Fully populated application information
+        description: A client (data tiger customer)  entry that stores the client specific settings.  
         required:
-                - name
+          - name
+          - email
         properties:
-            name:
-                "$ref" : "#/definitions/NameType"
-            androidSnsApplicationArn:
-                type: string
-                description: (For the SNS Push action) The SNS ARN of the GCM application for sending Push notifications.
-            iosSnsApplicationArn:
-                type: string
-                description: (For the SNS Push action) The SNS ARN of the IOS application for sending Push notifications.
+          name:
+            type: string
+            description: The name of the client account
+          description:
+            type: string
+            description: A description of the client account
+          email:
+            type: string
+            description: Primary e-mail of contact
+          phone:
+            type: string
+            description: Primary phone of contact
+          sendgridApiKey:
+            type: string
+            description: Sendgrid API key used for the sendgrid actions
+          awsAccessKey:
+            type: string
+            description: AWS access key of the client's account. This is used by any actions that require to the client's customer's account (e.g. SNS Push action)
+          awsSecret:
+            type: string
+            description: |
+              AWS secret that corresponds to the AWS key of the client's account. This is used by any actions that require to the client's
+              customer's account (e.g. SNS Push action)
+          awsRegion:
+            type: string
+            description: |
+              AWS region that corresponds to the AWS key of the client's account. This is used by any actions that require to the client's
+              customer's account (e.g. SNS Push action)
+
+  ClientAccountType:
+    description:  A client (data tiger customer)  entry that stores the client specific settings.  
+    allOf:
+      - $ref: '#/definitions/ClientAccountCreationType'
+      - $ref: '#/definitions/ObjectWithIdType'
+
+
+
+### Application  types
+  CreateApplicationType:
+    type: object
+    description: Fully populated application information
+    required:
+            - name
+    properties:
+        name:
+            "$ref" : "#/definitions/NameType"
+        description:
+            type: string
+            description: Description of this application
+        androidSnsApplicationArn:
+            type: string
+            description: (For the SNS Push action) The SNS ARN of the GCM application for sending Push notifications.
+        iosSnsApplicationArn:
+            type: string
+            description: (For the SNS Push action) The SNS ARN of the IOS application for sending Push notifications.
 
 
   ApplicationType:
@@ -1554,6 +1704,12 @@ parameters:
 
 
 ###Path parameters
+    clientAccountParam:
+        name: clientAccount
+        in: path
+        required: true
+        type: string
+        description: The identifier of the client account. The identifier 'me' always refers to the client that corresponds to the currently logged in user account. 
     applicationParam:
         name: application
         in: path

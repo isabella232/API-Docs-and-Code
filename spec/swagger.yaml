@@ -236,6 +236,8 @@ tags:
     description: System health and reporting
   - name: datatypes
     description: Supported data types, event and user schema
+  - name: users
+    description: Management of users
   - name: applications
     description: Management of applications
   - name: settings
@@ -432,6 +434,169 @@ paths:
             $ref: '#/definitions/ErrorType'
         404:
           description: The client account with the specified identifier does not exist.
+          schema:
+            $ref: '#/definitions/ErrorType'
+        500:
+          description: The update failed due to internal server error
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+
+
+##################################################################################
+#                      User Account Apis
+##################################################################################
+
+  /useraccounts:
+
+    parameters:
+      - "$ref": "#/parameters/authParam"
+
+###Get applications 
+    get:
+
+      summary: Get users of the client account.  
+      description: |
+        List all the users of the client according to the (optionally) specified filters. 
+      tags:
+        - users
+      operationId: getUsers
+      parameters:
+        - "$ref": "#/parameters/IdFilter"
+        - "$ref": "#/parameters/usernameFilter"
+        - "$ref": "#/parameters/emailFilter"
+        - "$ref": "#/parameters/firstNameFilter"
+        - "$ref": "#/parameters/lastNameFilter"
+      #Consumes is useless for get operations, added here just for reference
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The set of user accounts that match the filter criteria
+          schema:
+              type: object
+              properties:
+                paging:
+                  $ref: '#/definitions/PagingType'
+                items:
+                  description: Array of the returned applications
+                  type: array
+                  items:
+                    "$ref": '#/definitions/ApplicationType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+    post:
+      summary: Creates a new user account
+      description: |
+        Creates a new user account, under the same client account that the current user belongs. 
+      tags:
+        - users
+      operationId: createUserAccount
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/CreateUserAccountType'
+      responses:
+        201:
+          description: The user was created succesfully
+          schema:
+            $ref: '#/definitions/UserAccountType'
+          headers:
+            Location:
+                description: The location of the created user account
+                type: string
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+  /useraccounts/{useraccountid}:
+    parameters:
+        - "$ref": "#/parameters/useraccountparam"
+        - "$ref": "#/parameters/authParam"
+        
+###Update an existing user
+    put:
+      summary: Updates an user account
+      description: |
+        Updates the information of an existing user account.
+      tags:
+        - users
+      operationId: updateUserAccount
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/UpdateUserAccountType'
+      responses:
+        200:
+          description: The user was updated successfully
+          schema:
+            $ref: '#/definitions/UserAccountType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+#### get an existing user account
+
+    get:
+
+      summary: Get a user account
+      description: |
+        Returns the identified user account
+      tags:
+        - applications
+      operationId: getUserAccount
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The user account
+          schema:
+             "$ref": '#/definitions/UserAccountType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The user account with the specified identifier does not exist.
           schema:
             $ref: '#/definitions/ErrorType'
         500:
@@ -1233,6 +1398,58 @@ definitions:
 
 
 
+
+### User account types
+  CoreUserAccountType:
+    type: object
+    description: Necessary information to create a user account, apart from the password
+    required:
+            - username
+            - email
+    properties:
+        username:
+          type: string
+          description: The username of the user account
+        email:
+          type: string
+          description: The email of the user
+        firstName:
+          type: string
+          description: The first name of the user 
+        lastName:
+          type: string
+          description: The last name of the user
+
+  UserAccountPasswordType:
+    type: object
+    required:
+            - password
+    properties:
+        password:
+          type: string
+          description: The password of the user account
+
+  CreateUserAccountType:
+    description: Necessary information to create a user account
+    allOf:
+      - $ref: '#/definitions/CoreUserAccountType'
+      - $ref: '#/definitions/UserAccountPasswordType'
+
+  UserAccountType:
+    description: Fully populated application information
+    allOf:
+      - $ref: '#/definitions/CoreUserAccountType'
+      - $ref: '#/definitions/ObjectWithIdType'
+
+
+  UpdateUserAccountType:
+    description: Necessary information to create a user account
+    allOf:
+      - $ref: '#/definitions/CoreUserAccountType'
+      - $ref: '#/definitions/ObjectWithIdType'
+      - $ref: '#/definitions/UserAccountPasswordType'
+
+
 ### Application  types
   CreateApplicationType:
     type: object
@@ -1713,6 +1930,12 @@ parameters:
         required: true
         type: string
         description: The identifier of the client account. The identifier 'me' always refers to the client that corresponds to the currently logged in user account. 
+    useraccountparam:
+        name: useraccountid
+        in: path
+        required: true
+        type: string
+        description: The identifier of the user account. The identifier 'me' always refers to the currently logged in user account. 
     applicationParam:
         name: application
         in: path
@@ -1784,6 +2007,34 @@ parameters:
         required: false
         type: number
         description: Results per page
+
+
+###User account specific parameters
+    usernameFilter:
+        name: username
+        in: query
+        required: false
+        type: string
+        description: Username prefix of the the user accounts
+
+    emailFilter:
+        name: emailk
+        in: query
+        required: false
+        type: string
+        description: Email prefix of the user accounts
+    firstNameFilter:
+        name: firstName
+        in: query
+        required: false
+        type: string
+        description: First name prefix of the user accounts
+    lastNameFilter:
+        name: lastName
+        in: query
+        required: false
+        type: string
+        description: Last name prefix of the user accounts
 
 ###Workflow specific parameters
 

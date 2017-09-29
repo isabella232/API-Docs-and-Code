@@ -1,3 +1,4 @@
+
 ##################################################################################
 #                       Global definitions
 ##################################################################################
@@ -471,6 +472,9 @@ paths:
         - "$ref": "#/parameters/emailFilter"
         - "$ref": "#/parameters/firstNameFilter"
         - "$ref": "#/parameters/lastNameFilter"
+        - "$ref": "#/parameters/pagingPageParam"
+        - "$ref": "#/parameters/pagingPerPageParam"
+        - "$ref": "#/parameters/clientAccountIdParam"
       #Consumes is useless for get operations, added here just for reference
       consumes:
         - application/x-www-form-urlencoded
@@ -510,6 +514,7 @@ paths:
       produces:
         - application/json
       parameters:
+        - "$ref": "#/parameters/clientAccountIdParam"
         - name: body
           in: body
           required: true
@@ -541,6 +546,7 @@ paths:
     parameters:
         - "$ref": "#/parameters/useraccountparam"
         - "$ref": "#/parameters/authParam"
+        - "$ref": "#/parameters/clientAccountIdParam"
         
 ###Update an existing user
     put:
@@ -1403,9 +1409,6 @@ definitions:
   CoreUserAccountType:
     type: object
     description: Necessary information to create a user account, apart from the password
-    required:
-            - username
-            - email
     properties:
         username:
           type: string
@@ -1420,34 +1423,60 @@ definitions:
           type: string
           description: The last name of the user
 
+
   UserAccountPasswordType:
     type: object
-    required:
-            - password
     properties:
         password:
           type: string
           description: The password of the user account
 
+
+  ReturnedUserAccountType:
+    description: Information that is only returned but never provided
+    type: object
+    required:
+      - apikey
+    properties:
+      apikey:
+          type: string
+          description: The API key associated with this user
+      lastlogin:
+          $ref: '#/definitions/ISODateTimeType' 
+      lastip:
+          type: string
+          description: Last access IP using this user account
+
+
+
   CreateUserAccountType:
     description: Necessary information to create a user account
+    required:
+      - username
+      - email
+      - password
     allOf:
       - $ref: '#/definitions/CoreUserAccountType'
       - $ref: '#/definitions/UserAccountPasswordType'
 
-  UserAccountType:
-    description: Fully populated application information
-    allOf:
-      - $ref: '#/definitions/CoreUserAccountType'
-      - $ref: '#/definitions/ObjectWithIdType'
-
-
+ 
   UpdateUserAccountType:
     description: Necessary information to create a user account
     allOf:
       - $ref: '#/definitions/CoreUserAccountType'
       - $ref: '#/definitions/ObjectWithIdType'
       - $ref: '#/definitions/UserAccountPasswordType'
+
+
+  UserAccountType:
+    description: Fully populated application information
+    allOf:
+      - $ref: '#/definitions/CoreUserAccountType'
+      - $ref: '#/definitions/ObjectWithIdType'
+      - $ref: '#/definitions/ReturnedUserAccountType'
+
+
+
 
 
 ### Application  types
@@ -1992,6 +2021,13 @@ parameters:
               - PENDING
               - FAILED
 
+###Domain restriction paramters
+    clientAccountIdParam:
+        name: clientAccountId
+        in: query
+        required: false
+        type: number
+        description: Optional identifier of the client account. This can only be used if the user has access to other client accounts.
 
 
 ###Paging parameters
@@ -2018,7 +2054,7 @@ parameters:
         description: Username prefix of the the user accounts
 
     emailFilter:
-        name: emailk
+        name: email
         in: query
         required: false
         type: string

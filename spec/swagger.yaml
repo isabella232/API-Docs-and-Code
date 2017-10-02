@@ -255,6 +255,8 @@ x-tagGroups:
     tags:
       - health
       - authentication
+      - settings
+      - users
   - name: User journey management
     tags:
       - applications
@@ -588,7 +590,7 @@ paths:
       description: |
         Returns the identified user account
       tags:
-        - applications
+        - users
       operationId: getUserAccount
       produces:
         - application/json

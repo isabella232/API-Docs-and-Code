@@ -19,7 +19,7 @@ To play around with a few examples, we recommend a REST client called Postman. S
 
 Start sending events to DataTiger 
 
-![alt text](https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/web/screenshots/DataTigerEvents.png)
+![alt text](https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/web/DataTigerEvents.png)
 
 
 

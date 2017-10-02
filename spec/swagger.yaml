@@ -2029,7 +2029,7 @@ parameters:
         in: query
         required: false
         type: number
-        description: Optional identifier of the client account. This can only be used if the user has access to other client accounts.
+        description: Optional identifier of the client account. This can only be used by domain administrators that have access to multiple client accounts.
 
 
 ###Paging parameters

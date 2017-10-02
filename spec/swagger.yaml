@@ -1,3 +1,4 @@
+
 ##################################################################################
 #                       Global definitions
 ##################################################################################
@@ -137,6 +138,7 @@ info:
     * WAIT_ON_CONDITION - A condition that is evaluated multiple times within a given time limit. If at any time the condition becomes true, 
       then the flow continues along the TRUE transition. Otherwise, if the time limit is passed and the condition is still false, then the FALSE transition is taken.
     * SENDGRID_EMAIL_ACTION - Action for sending an email through SendGrid.
+    * SNS_PUSH_ACTION - Action for sending Push notifications using Amazon SNS
      Distinct node types require specific properties to define their actions. All these are defined in the workflow types below.
      
      
@@ -164,8 +166,9 @@ info:
             "version": 1,
             "status": "ACTIVE",
             "triggerExpression": "event.EventType == 'DemoEmailSend'",
-            "steps": {
-                "START": {
+            "steps": [
+               {
+                    "id": "START",
                     "name": "Start",
                     "type": "START",
                     "transitions": {
@@ -173,7 +176,8 @@ info:
                         "ERROR": "FIN"
                     }
                 },
-                "SEND_EMAIL": {
+                {
+                    "id" : "SEND_EMAIL",
                     "name": "WELCOME_EMAIL",
                     "type": "SENDGRID_EMAIL_ACTION",
                     "transitions": {
@@ -199,15 +203,17 @@ info:
                     ],
                     "sandboxed": false
                 },
-                "FIN": {
+                {
+                    "id": "FIN",
                     "name": "FIN",
                     "type": "TERMINAL"
                 },
-                "FIN_ERR": {
+                {
+                    "id": "FIN_ERR",
                     "name": "FIN_ERR",
                     "type": "TERMINAL"
                 }
-            }
+            ]
         }
     ```     
      
@@ -231,8 +237,12 @@ tags:
     description: System health and reporting
   - name: datatypes
     description: Supported data types, event and user schema
+  - name: users
+    description: Management of users
   - name: applications
     description: Management of applications
+  - name: settings
+    description: Management of settin gs
   - name: abtests
     description: Management of AB tests
   - name: workflows
@@ -245,6 +255,8 @@ x-tagGroups:
     tags:
       - health
       - authentication
+      - settings
+      - users
   - name: User journey management
     tags:
       - applications
@@ -358,6 +370,251 @@ paths:
           description:  Unauthorized. Username does not exist or username/password combination is invalid. 
           schema:
               type: string
+
+
+
+##################################################################################
+#                      Client Accounts
+##################################################################################
+
+  /clientaccounts/{clientAccount}:
+    parameters:
+        - "$ref": "#/parameters/clientAccountParam"
+        - "$ref": "#/parameters/authParam"
+        
+###Update an existing client account
+    put:
+      summary: Updates a client account.
+      description: |
+        Updates the client wide settings.
+      tags:
+        - settings
+      operationId: updateClientAccount
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/ClientAccountType'
+      responses:
+        200:
+          description: The client account was updated successfully
+          schema:
+            $ref: '#/definitions/ClientAccountType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+#### Get information about a client account
+
+    get:
+
+      summary: Get information about a client account
+      description: |
+        Return all the client wide settings of the requested client account
+      tags:
+        - settings
+      operationId: getClientAccount
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The client account
+          schema:
+             "$ref": '#/definitions/ClientAccountType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The client account with the specified identifier does not exist.
+          schema:
+            $ref: '#/definitions/ErrorType'
+        500:
+          description: The update failed due to internal server error
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+
+
+##################################################################################
+#                      User Account Apis
+##################################################################################
+
+  /useraccounts:
+
+    parameters:
+      - "$ref": "#/parameters/authParam"
+
+###Get applications 
+    get:
+
+      summary: Get users of the client account.  
+      description: |
+        List all the users of the client according to the (optionally) specified filters. 
+      tags:
+        - users
+      operationId: getUsers
+      parameters:
+        - "$ref": "#/parameters/IdFilter"
+        - "$ref": "#/parameters/usernameFilter"
+        - "$ref": "#/parameters/emailFilter"
+        - "$ref": "#/parameters/firstNameFilter"
+        - "$ref": "#/parameters/lastNameFilter"
+        - "$ref": "#/parameters/pagingPageParam"
+        - "$ref": "#/parameters/pagingPerPageParam"
+        - "$ref": "#/parameters/clientAccountIdParam"
+      #Consumes is useless for get operations, added here just for reference
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The set of user accounts that match the filter criteria
+          schema:
+              type: object
+              properties:
+                paging:
+                  $ref: '#/definitions/PagingType'
+                items:
+                  description: Array of the returned applications
+                  type: array
+                  items:
+                    "$ref": '#/definitions/ApplicationType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+    post:
+      summary: Creates a new user account
+      description: |
+        Creates a new user account, under the same client account that the current user belongs. 
+      tags:
+        - users
+      operationId: createUserAccount
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - "$ref": "#/parameters/clientAccountIdParam"
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/CreateUserAccountType'
+      responses:
+        201:
+          description: The user was created succesfully
+          schema:
+            $ref: '#/definitions/UserAccountType'
+          headers:
+            Location:
+                description: The location of the created user account
+                type: string
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+  /useraccounts/{useraccountid}:
+    parameters:
+        - "$ref": "#/parameters/useraccountparam"
+        - "$ref": "#/parameters/authParam"
+        - "$ref": "#/parameters/clientAccountIdParam"
+        
+###Update an existing user
+    put:
+      summary: Updates an user account
+      description: |
+        Updates the information of an existing user account.
+      tags:
+        - users
+      operationId: updateUserAccount
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/UpdateUserAccountType'
+      responses:
+        200:
+          description: The user was updated successfully
+          schema:
+            $ref: '#/definitions/UserAccountType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+#### get an existing user account
+
+    get:
+
+      summary: Get a user account
+      description: |
+        Returns the identified user account
+      tags:
+        - users
+      operationId: getUserAccount
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The user account
+          schema:
+             "$ref": '#/definitions/UserAccountType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The user account with the specified identifier does not exist.
+          schema:
+            $ref: '#/definitions/ErrorType'
+        500:
+          description: The update failed due to internal server error
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
 
 
 ##################################################################################
@@ -641,6 +898,29 @@ paths:
             $ref: '#/definitions/ErrorType'
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ##################################################################################
 #                       Workflow APIs
 ##################################################################################
@@ -819,6 +1099,7 @@ paths:
             $ref: '#/definitions/ErrorType'
     delete:
       summary: Deletes a workflow.
+
       description: |
         Deletes an existing workflow. If a workflow is deleted while currently active for a user, it will be executed as normal.
       tags:
@@ -876,7 +1157,7 @@ paths:
 
 ## Reporting Endpoints
 
-  /applications/{application}/workflows/{workflow}/reports:
+  /applications/{application}/workflows/{workflow}/reporting:
 
     get:
       summary: Returns the number of executions of each step of a given workflow and time period
@@ -892,6 +1173,8 @@ paths:
         - "$ref": "#/parameters/reportingFromFilter"
         - "$ref": "#/parameters/reportingUntilFilter"
         - "$ref": "#/parameters/reportingAggregationFilter"
+      consumes:
+        - application/x-www-form-urlencoded
       produces:
         - application/json
       responses:
@@ -949,36 +1232,55 @@ definitions:
       - message
     properties:
       errorType:
-        description: The top level type of the error. The type of errors continuously expands, so new enum values may be added often.
-        type: string
-        enum:
-          - INTERNAL_SERVER_ERROR
-          - CREATE_FAILED
-          - UPDATE_FAILED
-          - ENTITY_NOT_FOUND
-          - MALFORMED_REQUEST
-          - INVALID_REQUEST 
-      errorSubtype:
-        type: string
-        description: An optional subtype of the error type. This can be useful to identify methods to automatically handle/display the error.
-        enum:
-        - UNKNOWN
-        - UNPARSEABLE_REQUEST
-        - MISSING_REQUIRED_FIELD
-        - UNEXPECTED_FIELD
-        - INVALID_REFRENCE
-        - INVALID_NAME
-        - CYCLICAL_WORKFLOW
-      errorPath:
-        type: string
-        description: |
-          A simple JSONPath representation of the error location. The format is of the form "$.keyName.keyName.....propertyName". Does not support
-          arrays at the moment. The context (represented by $) is always the root level object that was sent by the caller.
+        $ref: '#/definitions/ErrorTypeEnum'
       message:
         type: string
         description: |
-          A more detailed, human readable, message containing more details about the error. If we cannot extract the error
-          location in the 'errorPath' format, this message may contain some human readable location information. 
+          A human readable message containing more details about the error.
+      innerErrors:
+        description: Details about what caused this error
+        type: array
+        items: 
+          type: object
+          required:
+            - errorType
+            - message
+          properties:
+            errorType:
+              $ref: '#/definitions/ErrorTypeEnum'
+            errorSubtype:
+              type: string
+              description: An optional subtype of the error type. This can be useful to identify methods to automatically handle/display the error.
+              enum:
+              - UNKNOWN
+              - UNPARSEABLE_REQUEST
+              - MISSING_REQUIRED_FIELD
+              - UNEXPECTED_FIELD
+              - INVALID_REFRENCE
+              - INVALID_NAME
+              - CYCLICAL_WORKFLOW
+            errorPath:
+              type: string
+              description: |
+                A simple JSONPath representation of the error location. The format is of the form "$.keyName.keyName.....propertyName". Does not support
+                arrays at the moment. The context (represented by $) is always the root level object that was sent by the caller.
+            message:
+              type: string
+              description: |
+                A more human readable message containing more details about the error. If we cannot extract the error
+                location in the 'errorPath' format, this message may contain some human readable location information.
+
+  ErrorTypeEnum:
+    description: The top level type of the error. The type of errors continuously expands, so new enum values may be added often.
+    type: string
+    enum: 
+      - INTERNAL_SERVER_ERROR
+      - CREATE_FAILED
+      - UPDATE_FAILED
+      - ENTITY_NOT_FOUND
+      - MALFORMED_REQUEST
+      - INVALID_REQUEST 
+
 
   PagingType:
     type: object
@@ -1058,16 +1360,145 @@ definitions:
   PropertyValueType:
     type: string
 
-### Application  types
+### Client account types
 
-  CreateApplicationType:
+  ClientAccountCreationType:
         type: object
-        description: Fully populated application information
+        description: A client (data tiger customer)  entry that stores the client specific settings.  
         required:
-                - name
+          - name
+          - email
         properties:
-            name:
-                "$ref" : "#/definitions/NameType"
+          name:
+            type: string
+            description: The name of the client account
+          description:
+            type: string
+            description: A description of the client account
+          email:
+            type: string
+            description: Primary e-mail of contact
+          phone:
+            type: string
+            description: Primary phone of contact
+          sendgridApiKey:
+            type: string
+            description: Sendgrid API key used for the sendgrid actions
+          awsAccessKey:
+            type: string
+            description: AWS access key of the client's account. This is used by any actions that require to the client's customer's account (e.g. SNS Push action)
+          awsSecret:
+            type: string
+            description: |
+              AWS secret that corresponds to the AWS key of the client's account. This is used by any actions that require to the client's
+              customer's account (e.g. SNS Push action)
+          awsRegion:
+            type: string
+            description: |
+              AWS region that corresponds to the AWS key of the client's account. This is used by any actions that require to the client's
+              customer's account (e.g. SNS Push action)
+
+  ClientAccountType:
+    description:  A client (data tiger customer)  entry that stores the client specific settings.  
+    allOf:
+      - $ref: '#/definitions/ClientAccountCreationType'
+      - $ref: '#/definitions/ObjectWithIdType'
+
+
+
+
+### User account types
+  CoreUserAccountType:
+    type: object
+    description: Necessary information to create a user account, apart from the password
+    properties:
+        username:
+          type: string
+          description: The username of the user account
+        email:
+          type: string
+          description: The email of the user
+        firstName:
+          type: string
+          description: The first name of the user 
+        lastName:
+          type: string
+          description: The last name of the user
+
+
+  UserAccountPasswordType:
+    type: object
+    properties:
+        password:
+          type: string
+          description: The password of the user account
+
+
+  ReturnedUserAccountType:
+    description: Information that is only returned but never provided
+    type: object
+    required:
+      - apikey
+    properties:
+      apikey:
+          type: string
+          description: The API key associated with this user
+      lastlogin:
+          $ref: '#/definitions/ISODateTimeType' 
+      lastip:
+          type: string
+          description: Last access IP using this user account
+
+
+
+  CreateUserAccountType:
+    description: Necessary information to create a user account
+    required:
+      - username
+      - email
+      - password
+    allOf:
+      - $ref: '#/definitions/CoreUserAccountType'
+      - $ref: '#/definitions/UserAccountPasswordType'
+
+ 
+  UpdateUserAccountType:
+    description: Necessary information to create a user account
+    allOf:
+      - $ref: '#/definitions/CoreUserAccountType'
+      - $ref: '#/definitions/ObjectWithIdType'
+      - $ref: '#/definitions/UserAccountPasswordType'
+
+
+  UserAccountType:
+    description: Fully populated application information
+    allOf:
+      - $ref: '#/definitions/CoreUserAccountType'
+      - $ref: '#/definitions/ObjectWithIdType'
+      - $ref: '#/definitions/ReturnedUserAccountType'
+
+
+
+
+
+### Application  types
+  CreateApplicationType:
+    type: object
+    description: Fully populated application information
+    required:
+            - name
+    properties:
+        name:
+            "$ref" : "#/definitions/NameType"
+        description:
+            type: string
+            description: Description of this application
+        androidSnsApplicationArn:
+            type: string
+            description: (For the SNS Push action) The SNS ARN of the GCM application for sending Push notifications.
+        iosSnsApplicationArn:
+            type: string
+            description: (For the SNS Push action) The SNS ARN of the IOS application for sending Push notifications.
 
 
   ApplicationType:
@@ -1142,7 +1573,9 @@ definitions:
       - CONDITION
       - WAIT
       - SENDGRID_EMAIL_ACTION
+      - SNS_PUSH_ACTION
       - AB_SPLIT
+      - SNS_SMS
 
   ExpressionType:
     type: string
@@ -1174,14 +1607,12 @@ definitions:
             triggerExpression:
                 "$ref" : "#/definitions/ExpressionType"
             steps:
-                type: object
-                description: |
-                  A map of all the workflow steps. It's structured as a map of the
-                  step name to the step definition.
-                properties:
-                  stepName:
-                    $ref: '#/definitions/WorkflowStepType'
-
+              type: array
+              description: |
+                A map of all the workflow steps. It's structured as a map of the
+                step name to the step definition.
+              items:
+                "$ref": '#/definitions/WorkflowStepType'
 
   WorkflowType:
     description: Full populated workflow type, including the identifier and version number.
@@ -1260,6 +1691,27 @@ definitions:
         required:
           - url
   
+  SNS_PUSH_ACTION:
+    description: |
+      An action for sending Push notifications using Amazon SNS. At least one of the androidRegistrationId or iosDeviceToken must be specified. Ideally both should be provided to allow 
+      sending push notifications to both IOS and Android users.
+    allOf:
+      - $ref : '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          message:
+            type: string
+            description: The message in the notification body
+          androidRegistrationId:
+            type: string
+            description: The GCM registration id for the user. This will normally be filled with an expression pointint to a user property that contains the registration id.
+          iosDeviceToken:
+            type: string
+            description: The IOS device token for the user. This will normally be filled with an expression pointing to a user property that contains the device token.
+        required:
+          - message
+  
+  
   SENDGRID_EMAIL_ACTION:
     description: |
       An action for sending an e-mail through SendGrid
@@ -1336,6 +1788,31 @@ definitions:
         required:
           - duration
           - timeUnit
+
+  SNS_SMS:
+    description: Sends a SMS through Amazon's SNS service
+    allOf:
+      - $ref : '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          phone:
+            type: string
+            description: The phone number where the SMS will be sent. This must include the country code.
+          message:
+            type: string
+            description: The text of the SMS message
+          maxPrice:
+            type: number
+            format: float
+            description: |
+              A double that specifies an upper limit on the price for sending this message. If a limit is specified, then SNS will cancel the delivery if the carrier is about to charge more than that.
+              This is specified always in USD.
+          senderId:
+            type: string
+            description: A text to appear as the sender of the SMS. This is supported in some countries, not all.
+        required:
+          - phone
+          - message
 
   TERMINAL:
     description: Workflow ending step
@@ -1478,6 +1955,18 @@ parameters:
 
 
 ###Path parameters
+    clientAccountParam:
+        name: clientAccount
+        in: path
+        required: true
+        type: string
+        description: The identifier of the client account. The identifier 'me' always refers to the client that corresponds to the currently logged in user account. 
+    useraccountparam:
+        name: useraccountid
+        in: path
+        required: true
+        type: string
+        description: The identifier of the user account. The identifier 'me' always refers to the currently logged in user account. 
     applicationParam:
         name: application
         in: path
@@ -1534,6 +2023,13 @@ parameters:
               - PENDING
               - FAILED
 
+###Domain restriction paramters
+    clientAccountIdParam:
+        name: clientAccountId
+        in: query
+        required: false
+        type: number
+        description: Optional identifier of the client account. This can only be used if the user has access to other client accounts.
 
 
 ###Paging parameters
@@ -1549,6 +2045,34 @@ parameters:
         required: false
         type: number
         description: Results per page
+
+
+###User account specific parameters
+    usernameFilter:
+        name: username
+        in: query
+        required: false
+        type: string
+        description: Username prefix of the the user accounts
+
+    emailFilter:
+        name: email
+        in: query
+        required: false
+        type: string
+        description: Email prefix of the user accounts
+    firstNameFilter:
+        name: firstName
+        in: query
+        required: false
+        type: string
+        description: First name prefix of the user accounts
+    lastNameFilter:
+        name: lastName
+        in: query
+        required: false
+        type: string
+        description: Last name prefix of the user accounts
 
 ###Workflow specific parameters
 
@@ -1632,7 +2156,7 @@ parameters:
         format: date-time
 
     reportingAggregationFilter:
-      name: aggregate
+      name: aggregation
       in: query
       required: false
       type: string

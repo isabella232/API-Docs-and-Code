@@ -1424,6 +1424,9 @@ definitions:
         lastName:
           type: string
           description: The last name of the user
+        contactNumber:
+          type: string
+          description: The contact number for the user
 
 
   UserAccountPasswordType:

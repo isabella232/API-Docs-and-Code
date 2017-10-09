@@ -581,6 +581,31 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorType'
+    delete:
+      summary: Deletes a user account
+      description: |
+        Deletes a user account
+      tags:
+        - users
+      operationId: deleteUserAccount 
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - test/plain
+      responses:
+        204:
+          description: The account was deleted succesfully 
+          schema:
+            type: string
+        404:
+          description: The account was not found
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
 
 #### get an existing user account
 

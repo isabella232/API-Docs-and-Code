@@ -86,10 +86,14 @@ info:
     The active workflows of an application collectively define how the DataTiger platform reacts to incoming user events.  Each workflow belongs to a single application and has
     a unique name within that application.
     
-    ### Workflow activation
-    Workflow activation is controlled by it's status and the trigger expressions. For a workflow to be activated from a user event the following conditions must be true:
+    ### Workflow Versioning
+    Workflows are versioned in order to allow you to edit a workflow without impacting the instances of hte workflow that are already in progress. Versions are immutable, you can always create a new version but you can never edit an existing one. Among all the versions of a workflow a single one must be assigned the ACTIVE status and this version will be instantiated by the workflow engine in response to the incoming events.
+    When you create a new version it is automatically assigned the DRAFT status. A version with this status can be edited as many times as needed, it is a mutable object. A draft version however cannot be set to ACTIVE. The version must first be brought to an immutable status by publishing the version. Publishing the version will set its status to PUBLISHED and make it effectively immutable. Once a version reaches the PUBLISHED status, it can then be made the active one. 
+    Only a single version can be active at any one time. To activate a different version, the active version must first be de-activated by setting its status back to PUBLISHED and then another version that is already in the PUBLISHED status can be activated instead. 
+    
+    For a workflow to be instantiated from a user event the following conditions must be true:
     * The workflow must not be already in progress for that user 
-    * The workflow status must be 'ACTIVE'
+    * There must be a workflow version with a status of 'ACTIVE'
     * The trigger expression must evaluate to true
     
     When a workflow is activated, its steps are executed starting from the workflow starting step. The processing continues until the workflow reaches a final state or fails. Depending
@@ -162,58 +166,61 @@ info:
      ```
         {
             "name": "Example Email Workflow",
-            "applicationId": 10000,
-            "version": 1,
-            "status": "ACTIVE",
+            "applicationId": 10000,        
             "triggerExpression": "event.EventType == 'DemoEmailSend'",
-            "steps": [
-               {
-                    "id": "START",
-                    "name": "Start",
-                    "type": "START",
-                    "transitions": {
-                        "OK": "SEND_EMAIL",
-                        "ERROR": "FIN"
-                    }
-                },
-                {
-                    "id" : "SEND_EMAIL",
-                    "name": "WELCOME_EMAIL",
-                    "type": "SENDGRID_EMAIL_ACTION",
-                    "transitions": {
-                        "OK": "FIN",
-                        "ERROR": "FIN_ERR"
-                    },
-                    "templateId": "sendGrid ID",
-                    "apiKey": "sendGrid API Key",
-                    "emailTo": "${user.Email}",
-                    "emailToName": "${user.FirstName}",
-                    "replyTo": "your@email.com",
-                    "replyToName": "Your Name",
-                    "from": "your@email.com",
-                    "fromName": "DataTiger",
-                    "subject": "Welcome to DataTiger",
-                    "trackOpen": true,
-                    "trackClick": true,
-                    "substitutions": [
-                        {
-                            "token": "%firstName%",
-                            "value": "${user.FirstName}"
-                        }
-                    ],
-                    "sandboxed": false
-                },
-                {
-                    "id": "FIN",
-                    "name": "FIN",
-                    "type": "TERMINAL"
-                },
-                {
-                    "id": "FIN_ERR",
-                    "name": "FIN_ERR",
-                    "type": "TERMINAL"
-                }
-            ]
+            "version": {
+              "id": 12345,
+              "name": "Welcome Flow",
+              "status": "ACTIVE",
+              "steps": [
+                 {
+                      "id": "START",
+                      "name": "Start",
+                      "type": "START",
+                      "transitions": {
+                          "OK": "SEND_EMAIL",
+                          "ERROR": "FIN"
+                      }
+                  },
+                  {
+                      "id" : "SEND_EMAIL",
+                      "name": "WELCOME_EMAIL",
+                      "type": "SENDGRID_EMAIL_ACTION",
+                      "transitions": {
+                          "OK": "FIN",
+                          "ERROR": "FIN_ERR"
+                      },
+                      "templateId": "sendGrid ID",
+                      "apiKey": "sendGrid API Key",
+                      "emailTo": "${user.Email}",
+                      "emailToName": "${user.FirstName}",
+                      "replyTo": "your@email.com",
+                      "replyToName": "Your Name",
+                      "from": "your@email.com",
+                      "fromName": "DataTiger",
+                      "subject": "Welcome to DataTiger",
+                      "trackOpen": true,
+                      "trackClick": true,
+                      "substitutions": [
+                          {
+                              "token": "%firstName%",
+                              "value": "${user.FirstName}"
+                          }
+                      ],
+                      "sandboxed": false
+                  },
+                  {
+                      "id": "FIN",
+                      "name": "FIN",
+                      "type": "TERMINAL"
+                  },
+                  {
+                      "id": "FIN_ERR",
+                      "name": "FIN_ERR",
+                      "type": "TERMINAL"
+                  }
+              ]
+          }
         }
     ```     
      
@@ -925,27 +932,6 @@ paths:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ##################################################################################
 #                       Workflow APIs
 ##################################################################################
@@ -958,9 +944,9 @@ paths:
 
 #### getWorkflowsOfApplication
     get:
-      summary: List the workflows of the application
+      summary: Lists the workflows of the application
       description: |
-        List the workflows under the specified application, according to the criteria
+        Lists the default versions of all workflows under the specified application that match the filtering criteria
         specified in the parameters.
 #Commented, until we do have such an information page
 #      externalDocs:
@@ -979,7 +965,6 @@ paths:
         - "$ref": "#/parameters/pagingPageParam"
         - "$ref": "#/parameters/pagingPerPageParam"
         - "$ref": "#/parameters/WorkflowSortingParam"
-      #Consumes is useless for get operations, added here just for reference
       consumes:
         - application/x-www-form-urlencoded
 
@@ -1009,10 +994,10 @@ paths:
     post:
       summary: Creates a new workflow
       description: |
-        Creates a new workflow under the specified application.
+        Creates a new workflow version under the specified application.
       tags:
         - workflows
-      operationId: createWorkflowInApplication
+      operationId: createWorkflow
       consumes:
         - application/json
       produces:
@@ -1044,7 +1029,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorType'
-
+      
 
   /applications/{application}/workflows/actions/validate:
     parameters:
@@ -1084,21 +1069,90 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
-
-
-  /applications/{application}/workflows/{workflow}:
+  /applications/{application}/workflows/{workflow}/versions:
     parameters:
         - "$ref": "#/parameters/applicationParam"
         - "$ref": "#/parameters/workflowParam"
         - "$ref": "#/parameters/authParam"
-    put:
-      summary: Updates a workflow, by creating a new version.
+        - "$ref": "#/parameters/nameFilter"
+        - "$ref": "#/parameters/statusFilter"
+    get:
+      summary: Gets all the versions of a specific workflow
       description: |
-        Updates a workflow, by creating a new version. Keep in mind that this will result in
-        a new workflow identifier (as the initial workflowId is attached to the previous workflow version)
+        Gets all the versions of a specific workflow
       tags:
         - workflows
-      operationId: updateWorkflow
+      operationId: getAllWorkflowVersions
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+
+        200:
+          description: The set of workflows that match the filtering criteria.
+          schema:
+            type: object
+            properties:
+              paging:
+                $ref: '#/definitions/PagingType'
+              items:
+                description: Array of the returned applications
+                type: array
+                items:
+                  "$ref": '#/definitions/WorkflowType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The workflow with the specified identifier was not found
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+  /applications/{application}/workflows/{workflow}/versions/{version}:
+    parameters:
+        - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/workflowParam"
+        - "$ref": "#/parameters/versionParam"
+        - "$ref": "#/parameters/authParam"
+    get:
+      summary: Gets a specific version of a workflow
+      description: |
+        Gets a specific version of a workflow
+      tags:
+        - workflows
+      operationId: getWorkflowVersion
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The workflow
+          schema:
+             "$ref": '#/definitions/WorkflowType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The workflow with the specified identifier was not found
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+    put:
+      summary: Updates a workflow version.
+      description: |
+        Updates a workflow version. 
+      tags:
+        - workflows
+      operationId: updateWorkflowVersion
       consumes:
         - application/json
       produces:
@@ -1122,6 +1176,96 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorType'
+
+    delete:
+      summary: Deletes a workflow version.
+
+      description: |
+        Deletes an existing workflow. If a workflow is deleted while currently active for a user, it will be executed as normal.
+      tags:
+        - workflows
+      operationId: deleteWorkflowVersion
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - test/plain
+      responses:
+        204:
+          description: The workflow version was deleted succesfully
+          schema:
+            type: string
+        404:
+          description: The workflow version was not found
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+
+#### getWorkflowOfApplication
+  /applications/{application}/workflows/{workflow}:
+    parameters:
+        - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/workflowParam"
+    get:
+      summary: Gets the default version of a specific workflow
+      description: |
+        Return an application workflow, identified by the workflow ID
+      tags:
+        - workflows
+      operationId: getWorkflowOfApplication
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The workflow
+          schema:
+             "$ref": '#/definitions/WorkflowType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The workflow with the specified identifier was not found
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+    put:
+      summary: Updates the non-versioned properties of a workflow.
+      description: |
+        Updates the non-versioned properties of a workflow.
+      tags:
+        - workflows
+      operationId: updateWorkflowProperties
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/UpdateWorkflowType'
+      responses:
+        200:
+          description: The workflow was updated successfully
+          schema:
+            $ref: '#/definitions/WorkflowType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
     delete:
       summary: Deletes a workflow.
 
@@ -1148,41 +1292,12 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
-
-#### getWorkflowOfApplication
-
-    get:
-
-      summary: Get a unique workflow
-      description: |
-        Return an application workflow, identified by the workflow unique identifier
-      tags:
-        - workflows
-      operationId: getWorkflowOfApplication
-      produces:
-        - application/json
-      responses:
-        200:
-          description: The workflow
-          schema:
-             "$ref": '#/definitions/WorkflowType'
-        400:
-          description: Malformed request
-          schema:
-            $ref: '#/definitions/ErrorType'
-        404:
-          description: The workflow with the specified identifier
-          schema:
-            $ref: '#/definitions/ErrorType'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorType'
+  
 
 
 ## Reporting Endpoints
 
-  /applications/{application}/workflows/{workflow}/reporting:
+  /applications/{application}/workflows/{workflow}/versions/{version}/reporting:
 
     get:
       summary: Returns the number of executions of each step of a given workflow and time period
@@ -1195,6 +1310,7 @@ paths:
       parameters:
         - "$ref": "#/parameters/applicationParam"
         - "$ref": "#/parameters/workflowParam"
+        - "$ref": "#/parameters/versionParam"
         - "$ref": "#/parameters/reportingFromFilter"
         - "$ref": "#/parameters/reportingUntilFilter"
         - "$ref": "#/parameters/reportingAggregationFilter"
@@ -1236,6 +1352,8 @@ definitions:
 
   ObjectWithIdType:
     type: object
+    required:
+      - id
     properties:
       id:
         $ref: '#/definitions/IdType'
@@ -1332,18 +1450,15 @@ definitions:
         type: string
         description: Link to last page
 
-  StatusType:
+  WorkflowStatusType:
     type: string
     description: |
       The status of the entity. Not all values might be relevant for all entities.
     enum:
       - ACTIVE
-      - INACTIVE
-      - COMPLETED
+      - PUBLISHED
       - DELETED
-      - CANCELED
-      - PENDING
-      - FAILED
+      - DRAFT
 
   AttributeDefinition:
     description: Defines an attribute
@@ -1591,9 +1706,9 @@ definitions:
 ### Workflow simple top level types
 
 
-  WorkflowStateType:
+  WorkflowStepTypeEnum:
     type: string
-    description: Describes the type of a workflow state
+    description: Describes the type of a workflow step
     enum:
       - START
       - TERMINAL
@@ -1622,6 +1737,57 @@ definitions:
         description: |
           Fully populated workflow information.
         required:
+          - applicationId      
+          - name
+          - triggerExpression
+          - version            
+        properties:
+            name:
+                "$ref" : "#/definitions/NameType"
+            applicationId:
+                "$ref": "#/definitions/IdType"
+            version:
+                "$ref": "#/definitions/WorkflowVersionType"
+            triggerExpression:
+                "$ref" : "#/definitions/ExpressionType"
+
+  NonVersionedWorkflowProperties:
+    type: object
+    description: |
+      The non-versioned properties of a workflow.
+    required:
+            - applicationId            
+            - name
+            - triggerExpression          
+    properties:
+        name:
+            "$ref" : "#/definitions/NameType"
+        applicationId:
+            "$ref": "#/definitions/IdType"
+        triggerExpression:
+            "$ref" : "#/definitions/ExpressionType"
+
+  UpdateWorkflowType:
+        type: object
+        description: |
+          The non-versioned properties of a workflow.
+        allOf:
+          - $ref: '#/definitions/NonVersionedWorkflowProperties'
+          - $ref: '#/definitions/ObjectWithIdType'
+        
+
+  WorkflowType:
+    description: Full populated workflow type, including the identifier and version number.
+    allOf:
+      - $ref: '#/definitions/CreateWorkflowType'
+      - $ref: '#/definitions/ObjectWithIdType'
+
+
+  WorkflowVersionType:
+        type: object
+        description: |
+          A version of a workflow.
+        required:
                 - name
                 - status
                 - steps
@@ -1631,9 +1797,7 @@ definitions:
             applicationId:
                 "$ref": "#/definitions/IdType"
             status:
-                "$ref" : "#/definitions/StatusType"
-            triggerExpression:
-                "$ref" : "#/definitions/ExpressionType"
+                "$ref" : "#/definitions/WorkflowStatusType"
             steps:
               type: array
               description: |
@@ -1641,15 +1805,6 @@ definitions:
                 step name to the step definition.
               items:
                 "$ref": '#/definitions/WorkflowStepType'
-
-  WorkflowType:
-    description: Full populated workflow type, including the identifier and version number.
-    allOf:
-      - $ref: '#/definitions/CreateWorkflowType'
-      - $ref: '#/definitions/ObjectWithIdType'
-      - $ref: '#/definitions/ObjectWithVersionType'
-
-
 
 ###### Workflow steps
 
@@ -1668,7 +1823,7 @@ definitions:
       - type
     properties:
       type:
-        "$ref": "#/definitions/WorkflowStateType"
+        "$ref": "#/definitions/WorkflowStepTypeEnum"
       name:
         "$ref" : "#/definitions/WorkflowStepNameType"
       description:
@@ -1683,7 +1838,7 @@ definitions:
         additionalProperties:
             "$ref": "#/definitions/WorkflowStepNameType"
 
-  #This has to be exactly the same as the value of the workflowStateType
+  #This has to be exactly the same as the value of the WorkflowStepType
   START:
     description: |
       The workflow starting step.
@@ -1901,8 +2056,9 @@ definitions:
           $ref: '#/definitions/GroupValuesType'
     example:
       request:
-        applicationId: 123e4567-e89b-12d3-a456-426655440000
-        workflowId: 123e4567-e89b-12d3-a456-426655440000
+        applicationId: 1234567890
+        workflowId: 1234567890
+        versionId: 1234567890
         start: '2017-09-01T11:00:00Z'
         end:  '2017-09-01T12:00:00Z'
         aggregation: HOUR
@@ -1935,6 +2091,8 @@ definitions:
         type: string
       workflowId:
         type: number
+      versionId:
+        type: number
       values:
         type: array
         items:
@@ -1949,7 +2107,9 @@ definitions:
       applicationId:
         type: string
       workflowId:
-        type: string
+        type: number
+      versionId:
+        type: number
       start:
         $ref: '#/definitions/ISODateTimeType'
       end:
@@ -2009,6 +2169,13 @@ parameters:
         type: string
         description: The identifier for the workflow
 
+    versionParam:
+        name: version
+        in: path
+        required: true
+        type: number
+        description: The identifier for the workflow version
+
 ###Generic filtering parameters
 
     nameFilter:
@@ -2032,7 +2199,7 @@ parameters:
         required: false
         type: string
         description: |
-            The version to be returned. If null or 'latest' then the latest version is returned.
+            The version to be returned. If null then the default latest version is returned.
 
     statusFilter:
         name: status
@@ -2114,11 +2281,7 @@ parameters:
         enum:
           - 'name'
           - '-name'
-          - version
-          - -version
-          - status
-          - -status
-
+          
     dateFromFilter:
         name: fromTime
         in: query
@@ -2167,6 +2330,13 @@ parameters:
 
 
 # Reporting parameters
+    reportingVersionFilter:
+        name: version
+        in: query
+        required: true
+        description: The ID of the workflow version from which executions will be returned
+        type: number
+
     reportingFromFilter:
         name: from
         in: query

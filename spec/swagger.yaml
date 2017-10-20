@@ -2358,6 +2358,6 @@ parameters:
       in: query
       required: false
       type: string
-      enum: [HOUR,DAY,WEEK,MONTH]
+      enum: [HOURS,DAYS,WEEKS,MONTHS]
       description: |
         The time unit on which to aggregate the reported statistics.

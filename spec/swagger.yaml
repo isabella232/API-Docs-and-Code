@@ -142,6 +142,7 @@ info:
     * WAIT_ON_CONDITION - A condition that is evaluated multiple times within a given time limit. If at any time the condition becomes true, 
       then the flow continues along the TRUE transition. Otherwise, if the time limit is passed and the condition is still false, then the FALSE transition is taken.
     * SENDGRID_EMAIL_ACTION - Action for sending an email through SendGrid.
+    * MANDRILL_EMAIL_ACTION - Action for sending an email through Mandrill.
     * SNS_PUSH_ACTION - Action for sending Push notifications using Amazon SNS
      Distinct node types require specific properties to define their actions. All these are defined in the workflow types below.
      
@@ -1716,6 +1717,7 @@ definitions:
       - CONDITION
       - WAIT
       - SENDGRID_EMAIL_ACTION
+      - MANDRILL_EMAIL_ACTION
       - SNS_PUSH_ACTION
       - AB_SPLIT
       - SNS_SMS
@@ -1949,7 +1951,57 @@ definitions:
           - templateId
           - from
           - replyTo
-          
+  
+
+  MANDRILL_EMAIL_ACTION:
+    description: An action for sending emails through Mandrill
+    allOf:
+      - $ref : '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          apiKey:
+            type: string
+            description: the api key to use when calling the Mandrill api
+          nameFrom:
+            type: string
+            description: the name/alias to appear in the From field of the email
+          emailFrom:
+            type: string
+            description: the email to appear in the From field of the email
+          emailTo:
+            type: string
+            description: the email address to send the email to
+          subject:
+            type: string
+            description: the subject of the email
+          templateName:
+            type: string
+            description: the Mandrill template to use
+          tags:
+            type: array
+            items:
+              type: string
+            description: the Mandrill tags to be used while sending the email
+          globalMergeVars: 
+            type: object
+            description: The Mandrill globalMergeVars to be substituted within the email "var":"value" 
+          templateContents: 
+            type: object
+            description: The Mandrill template contents to be substituted by Mandrill 
+          trackOpens: 
+            type: boolean
+            description: Defines if Mandrill should track email open event
+          trackClicks: 
+            type: boolean
+            description: Defines if Mandrill should track clicks to links within the email
+  
+        required:
+          - apiKey
+          - emailFrom
+          - emailTo
+          - subject
+          - templateName
+
   WAIT:
     description: Waits for a specified amount of time
     allOf:

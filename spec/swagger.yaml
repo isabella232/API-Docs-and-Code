@@ -959,7 +959,6 @@ paths:
       operationId: getWorkflowsOfApplication
       parameters:
         - "$ref": "#/parameters/nameFilter"
-        - "$ref": "#/parameters/versionFilter"
         - "$ref": "#/parameters/statusFilter"
         - "$ref": "#/parameters/dateFromFilter"
         - "$ref": "#/parameters/dateToFilter"
@@ -2244,14 +2243,6 @@ parameters:
         type: string
         description: The identifier to be fetched
 
-
-    versionFilter:
-        name: version
-        in: query
-        required: false
-        type: string
-        description: |
-            The version to be returned. If null then the default latest version is returned.
 
     statusFilter:
         name: status

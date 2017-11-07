@@ -192,7 +192,6 @@ info:
                           "ERROR": "FIN_ERR"
                       },
                       "templateId": "sendGrid ID",
-                      "apiKey": "sendGrid API Key",
                       "emailTo": "${user.Email}",
                       "emailToName": "${user.FirstName}",
                       "replyTo": "your@email.com",
@@ -1903,9 +1902,6 @@ definitions:
       - $ref : '#/definitions/WorkflowStepType'
       - type: object
         properties:
-          apiKey:
-            type: string
-            description: the api key to use when calling the SendGrid api
           templateId:
             type: string
             description: the id of the email template
@@ -1946,7 +1942,6 @@ definitions:
                     using the syntax ${<attribute>}, e.g. ${user.Email}.  The set of possible user attributes is defined through the data dictionaries.
 
         required:
-          - apiKey
           - templateId
           - from
           - replyTo

@@ -2171,7 +2171,7 @@ definitions:
   TimeUnitType:
     description: TimeUnit
     type: string
-    enum: [HOUR,DAY,WEEK,MONTH]
+    enum: [HOURS,DAYS,WEEKS,MONTHS]
 
 
 ##################################################################################

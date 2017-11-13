@@ -145,7 +145,7 @@ info:
     * MANDRILL_EMAIL_ACTION - Action for sending an email through Mandrill.
     * SNS_PUSH_ACTION - Action for sending Push notifications using Amazon SNS
      Distinct node types require specific properties to define their actions. All these are defined in the workflow types below.
-     
+    * ADWORDS_REMARKETING_ACTION - An action that adds the user to a Google Adwords remarketing user list.
      
     Each type of node has a set of predefined outgoing transitions as follows:
       
@@ -192,7 +192,6 @@ info:
                           "ERROR": "FIN_ERR"
                       },
                       "templateId": "sendGrid ID",
-                      "apiKey": "sendGrid API Key",
                       "emailTo": "${user.Email}",
                       "emailToName": "${user.FirstName}",
                       "replyTo": "your@email.com",
@@ -1904,9 +1903,6 @@ definitions:
       - $ref : '#/definitions/WorkflowStepType'
       - type: object
         properties:
-          apiKey:
-            type: string
-            description: the api key to use when calling the SendGrid api
           templateId:
             type: string
             description: the id of the email template
@@ -1947,7 +1943,6 @@ definitions:
                     using the syntax ${<attribute>}, e.g. ${user.Email}.  The set of possible user attributes is defined through the data dictionaries.
 
         required:
-          - apiKey
           - templateId
           - from
           - replyTo
@@ -1959,13 +1954,10 @@ definitions:
       - $ref : '#/definitions/WorkflowStepType'
       - type: object
         properties:
-          apiKey:
-            type: string
-            description: the api key to use when calling the Mandrill api
-          nameFrom:
+          fromName:
             type: string
             description: the name/alias to appear in the From field of the email
-          emailFrom:
+          fromEmail:
             type: string
             description: the email to appear in the From field of the email
           emailTo:
@@ -1996,12 +1988,30 @@ definitions:
             description: Defines if Mandrill should track clicks to links within the email
   
         required:
-          - apiKey
-          - emailFrom
+          - fromEmail
           - emailTo
           - subject
           - templateName
 
+  ADWORDS_REMARKETING_ACTION:
+    description: An action that adds the user to a Google Adwords remarketing user list.
+    allOf:
+      - $ref: '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          userListName:
+            type: string
+            description: The user list name where the users will be added to. If the user list doesn\'t exist, it will be created.
+          toAdd:
+            type: string
+            description: The information to add. Right now it has to be the user email (Google Adwords offers more options which can be added.) Usually maps to an event or user field
+          userTTL:
+            type: number
+            description: Amount of days that the user will remain in the list. Or null if the user will not expire.
+        required:
+         - userListName
+         - toAdd
+  
   WAIT:
     description: Waits for a specified amount of time
     allOf:

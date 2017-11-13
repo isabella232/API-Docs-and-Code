@@ -1523,6 +1523,9 @@ definitions:
           sendgridApiKey:
             type: string
             description: Sendgrid API key used for the sendgrid actions
+          mandrillApiKey:
+            type: string
+            description: Mandrill API key used for the mandrill actions
           awsAccessKey:
             type: string
             description: AWS access key of the client's account. This is used by any actions that require to the client's customer's account (e.g. SNS Push action)

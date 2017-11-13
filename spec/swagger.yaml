@@ -380,6 +380,31 @@ paths:
 
 
 
+  /account/logout:
+    post:
+      summary: Logs out the current user. 
+      description: |
+        Logs out the current user by invalidating the current session    
+      tags:
+        - authentication
+      operationId: logout
+      produces:
+        - text/plain
+      consumes:
+        - application/x-www-form-urlencoded
+      responses:
+        200:
+          description:  Logout was successfull. 
+          schema:
+              type: string
+        400:
+          description:  Bad request. Potentially there is no valid autheticated session 
+          schema:
+              type: string
+
+
+
+
 ##################################################################################
 #                      Client Accounts
 ##################################################################################
@@ -958,7 +983,6 @@ paths:
       operationId: getWorkflowsOfApplication
       parameters:
         - "$ref": "#/parameters/nameFilter"
-        - "$ref": "#/parameters/versionFilter"
         - "$ref": "#/parameters/statusFilter"
         - "$ref": "#/parameters/dateFromFilter"
         - "$ref": "#/parameters/dateToFilter"
@@ -1524,6 +1548,9 @@ definitions:
           sendgridApiKey:
             type: string
             description: Sendgrid API key used for the sendgrid actions
+          mandrillApiKey:
+            type: string
+            description: Mandrill API key used for the mandrill actions
           awsAccessKey:
             type: string
             description: AWS access key of the client's account. This is used by any actions that require to the client's customer's account (e.g. SNS Push action)
@@ -2187,7 +2214,7 @@ definitions:
   TimeUnitType:
     description: TimeUnit
     type: string
-    enum: [HOUR,DAY,WEEK,MONTH]
+    enum: [HOURS,DAYS,WEEKS,MONTHS]
 
 
 ##################################################################################
@@ -2254,14 +2281,6 @@ parameters:
         type: string
         description: The identifier to be fetched
 
-
-    versionFilter:
-        name: version
-        in: query
-        required: false
-        type: string
-        description: |
-            The version to be returned. If null then the default latest version is returned.
 
     statusFilter:
         name: status

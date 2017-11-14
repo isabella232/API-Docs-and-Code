@@ -1747,6 +1747,7 @@ definitions:
       - SNS_PUSH_ACTION
       - AB_SPLIT
       - SNS_SMS
+      - ADWORDS_REMARKETING_ACTION
 
   ExpressionType:
     type: string

@@ -278,49 +278,109 @@ x-tagGroups:
 
 paths:
 
-  /datatypes:
+  /data/types:
     get:
-      summary: Lists the available user & event attributes
+      summary: Lists the available data types and operators
       description: |
-        Lists the name and type of each attribute defined at the user and event level. This information
-        is necessary to know which attributes can be included in workflow condition expressions or
-        segmentation expressions.
-        Each attribute is identified by a name and a data type. The supported set of data types is
-        specified by the AttributeType enumeration ('type' property of the response).
+        Returns a list of all the supported data types and the list of operators that can be
+        applied on that data type.
       tags:
         - datatypes
 
-      operationId: getDataDictionary
+      operationId: getDataTypes
       produces:
         - application/json
       responses:
         200:
-          description: Returns the data dictionaries
+          description: Returns the list of data types and their applicable operators
           schema:
-            type: object
-            properties:
-              userAttributes:
-                description: The list of user attributes
-                type: array
-                items:
-                  $ref: '#/definitions/AttributeDefinition'
-              eventAttributes:
-                description: The list of event attributes
-                type: array
-                items:
-                  $ref: '#/definitions/AttributeDefinition'
-              operators:
-                description: |
-                  A map having as keys the available attribute types for building segmentation & condition expressions
-                  and as values the list of operators that are applicable for each respective attribute type.
-                  E.g. a mapping of the form AttributeType Integer -> [ 'Greater Than', 'Less Than', 'Equal',...] etc.
-                type: object
-                properties:
-                  attributeType:
-                    "$ref": "#/definitions/OperatorType"
-                additionalProperties:
-                  "$ref": "#/definitions/OperatorType"
+            "$ref": "#/definitions/OperatorType"
+            
+  /data/user:
+    get:
+      summary: Lists the available user attributes
+      description: |
+        Lists the name and type of each attribute defined at the user level. This information
+        is necessary to know which attributes can be included in workflow condition expressions when using the User dimension.
+        Each attribute is identified by a name and a data type. 
 
+      tags:
+        - datatypes
+
+      operationId: getUserDataDictionary
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Lists the name and type of each attribute defined at the user level. 
+          schema:
+            "$ref": "#/definitions/UserDataDictionaryType"
+    put:
+      summary: Updates the list of user attributes
+      description: |
+        Submits a new version of the available user attributes replacing the previous one.
+      tags:
+        - datatypes
+      operationId: updateUserDataDictionary
+      consumes: 
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - 
+          name: data 
+          in: body
+          required: true
+          schema:
+            "$ref": "#/definitions/UserDataDictionaryType"
+      responses:
+        200:
+          description: Returns the original user attributes list that was used as an input to this operation.
+          schema:
+            "$ref": "#/definitions/UserDataDictionaryType"
+              
+  /data/events:
+    get:
+      summary: Lists the available event attributes
+      description: |
+        Lists the name and type of each attribute defined at the user and event level. This information
+        is necessary to know which attributes can be included in workflow condition expressions when using the Event dimension.
+        Each attribute is identified by a name and a data type.
+      tags:
+        - datatypes
+
+      operationId: getEventsDataDictionary
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Lists the name and type of each attribute defined at the user and event level.
+          schema:
+            "$ref": "#/definitions/EventsDataDictionaryType"
+    put:
+      summary: Updates the list of event attributes and event types
+      description: |
+        Submits a new version of the available event attributes and event types replacing the previous one.
+      tags:
+        - datatypes
+      operationId: updateEventsDataDictionary
+      consumes: 
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - 
+          name: data 
+          in: body
+          required: true
+          schema:
+            "$ref": "#/definitions/EventsDataDictionaryType"
+      responses:
+        200:
+          description: Returns the original user attributes list that was used as an input to this operation.
+          schema:
+            "$ref": "#/definitions/EventsDataDictionaryType"            
+                
 
 ##################################################################################
 #                      System calls
@@ -1484,6 +1544,66 @@ definitions:
       - DELETED
       - DRAFT
 
+  UserDataDictionaryType:
+    type: object
+    properties:
+      clientAccountId:
+        description: The ID of the client account that owns this data dictionary.
+        type: number
+      description:
+        description: An optional, user-provided, description of the data contained in the data dictionary.
+        type: string
+      attributes:
+        description: The list of user attributes
+        type: array
+        items:
+          $ref: '#/definitions/AttributeDefinition'
+
+  EventsDataDictionaryType:
+    type: object
+    properties:
+      clientAccountId:
+        description: The ID of the client account that owns this data dictionary.
+        type: number
+      description:
+        description: An optional, user-provided, description of the data contained in the data dictionary.
+        type: string
+      attributes:
+        description: The list of event attributes
+        type: array
+        items:
+          $ref: '#/definitions/AttributeDefinition'
+      eventTypes:
+        description: |
+          A list where each item is an object that specifies an event type and a list of attributes that are 
+          expected for this event type.
+        type: array
+        items:
+          "$ref": "#/definitions/EventTypeEntry"  
+
+  EventTypeEntry:
+    type: object
+    properties:
+      type:
+        type: string
+        description: the event type as a string constant
+      attributes:
+        type: array
+        items:
+          $ref: '#/definitions/AttributeReference'
+        description: the list of attributes for this event type
+
+  AttributeReference:
+    description: References a specific attribute from the global pool of event attributes.
+    type: object
+    properties:
+      name:
+        type: string
+        description: the name of the attribute that is being referenced
+      mandatory:
+        type: boolean
+        description: indicates that this attribute must have a value for this event type.
+      
   AttributeDefinition:
     description: Defines an attribute
     type: object
@@ -1491,8 +1611,17 @@ definitions:
       name:
         type: string
         description: the name of the attribute
+      description:
+        type: string
+        description: an optional description for this attribute
       type:
         $ref: '#/definitions/AttributeType'
+      mandatory:
+        type: boolean
+        description: indicates that this attribute must have a value 
+      editable:
+        type: boolean
+        description: indicates that this attribute can be changed in some way or not.
 
   AttributeType:
     description: Enumeration of all supported data types for user and event attributes

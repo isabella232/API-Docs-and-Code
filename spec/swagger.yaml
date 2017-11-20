@@ -1551,9 +1551,6 @@ definitions:
       Defines the list of attributes that will potentially appear within the user context of incoming events.
     type: object
     properties:
-      clientAccountId:
-        description: The ID of the client account that owns this data dictionary.
-        type: number
       description:
         description: An optional, user-provided, description of the data contained in the data dictionary.
         type: string
@@ -1633,9 +1630,6 @@ definitions:
       Defines the possible types of events and the list of attributes that are expected within each event type.
     type: object
     properties:
-      clientAccountId:
-        description: The ID of the client account that owns this data dictionary.
-        type: number
       description:
         description: An optional, user-provided, description of the data contained in the data dictionary.
         type: string

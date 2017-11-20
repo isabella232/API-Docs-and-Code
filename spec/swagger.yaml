@@ -337,7 +337,7 @@ paths:
         200:
           description: Returns the original user attributes list that was used as an input to this operation.
           schema:
-            "$ref": "#/definitions/UserDataDictionaryType"
+            "$ref": "#/definitions/UserDataDictionaryUpdateResponse"
               
   /data/events:
     get:
@@ -377,9 +377,11 @@ paths:
             "$ref": "#/definitions/EventsDataDictionaryType"
       responses:
         200:
-          description: Returns the original user attributes list that was used as an input to this operation.
+          description: |
+            Returns the original user attributes list that was used as an input to this operation.
+            If the changes introduce breaking changes then the operation will fail and a list of validation errors will be returned in the field validationErrors.
           schema:
-            "$ref": "#/definitions/EventsDataDictionaryType"            
+            "$ref": "#/definitions/EventsDataDictionaryUpdateResponse"            
                 
 
 ##################################################################################
@@ -1545,6 +1547,8 @@ definitions:
       - DRAFT
 
   UserDataDictionaryType:
+    description: |
+      Defines the list of attributes that will potentially appear within the user context of incoming events.
     type: object
     properties:
       clientAccountId:
@@ -1558,8 +1562,75 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/AttributeDefinition'
+          
+  UserDataDictionaryUpdateResponse:
+    description: |
+      The response to an update operation on the user data types. It will contain the original request object and an additional validationErrors field that will contain any validation errors that prevented the update from happening.
+    allOf:
+      - $ref: '#/definitions/UserDataDictionaryType'
+      - type: object
+        properties:
+          validationErros:
+            $ref: '#/definitions/UserDataDictionaryValidationErrorsType'
+              
+  UserDataDictionaryValidationErrorsType:
+    type: object
+    description: |
+      Contains all the validation errors that might occur during an update operation of the user data types.
+      Only errors related to the attribute definitions in the user attributes pool can occur and these will be contained in the attributeErrors field. 
+    properties:
+      attributeErrors:
+        type: array
+        items:       
+          $ref: '#/definitions/AttributeValidationErrorType'
+
+  EventDataDictionaryValidationErrorsType:
+    type: object
+    description: |
+      Contains all the validation errors that might occur during an update operation of the event data types.
+      Errors related to the attribute definitions in the event attributes pool will be contained in the attributeErrors field. While errors related to the schema of a specific event type will be contained in the eventTypeErrors under the key that matches the event type constant.
+    properties:
+      attributeErrors:
+        description: Contains an entry for every attribute that didn't pass validation.
+        type: array
+        items:       
+          $ref: '#/definitions/AttributeValidationErrorType'
+      eventTypeErrors:
+        type: array
+        items:
+          $ref: '#/definitions/EventTypeValidationErrorType'
+
+  EventTypeValidationErrorType:
+    type: object
+    description: Contains the validation errors for a specific event type.
+    properties:
+      eventType:
+        type: string
+        description: The event type code
+      errorMessage:
+        type: string
+        description: A description of the nature of the error
+      attributeErrors:
+        description: If there was a problem with the attributes associated with this event type, then this field will contain a list of the attribute validation errors.
+        type: array
+        items:       
+          $ref: '#/definitions/AttributeValidationErrorType'
+        
+  AttributeValidationErrorType:
+    type: object
+    description: Describes the kind of a validation error related with a user or event attribute
+    properties:
+      attributeName:
+        type: string
+        description: The name of the attribute
+      errorMessage:
+        type: string
+        description: A description of the nature of the error
+
 
   EventsDataDictionaryType:
+    description: |
+      Defines the possible types of events and the list of attributes that are expected within each event type.
     type: object
     properties:
       clientAccountId:
@@ -1581,7 +1652,18 @@ definitions:
         items:
           "$ref": "#/definitions/EventTypeEntry"  
 
+  EventsDataDictionaryUpdateResponse:
+    description: |
+      The response to an update operation on the event data types. It will contain the original request object and an additional validationErrors field that will contain any validation errors that prevented the update from happening.
+    allOf:
+      - $ref: "#/definitions/EventsDataDictionaryType"
+      - type: object
+        properties:
+          validationErrors:
+            $ref: "#/definitions/EventDataDictionaryValidationErrorsType"
+            
   EventTypeEntry:
+    description: Schema information for a specific event type.
     type: object
     properties:
       type:
@@ -1605,7 +1687,7 @@ definitions:
         description: indicates that this attribute must have a value for this event type.
       
   AttributeDefinition:
-    description: Defines an attribute
+    description: Defines an attribute that can appear within the user or event contexts.
     type: object
     properties:
       name:

@@ -1352,6 +1352,46 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
+## Steptpyes
+
+  /stepdata/adwords/userlists:
+    get:
+      summary: Returns the user lists that the user has in his google adwords account.
+      tags:
+        - stepdata
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The response will contain an array of strings, each of them being one user list name.
+        403:
+          description: The user has not set up google oauth integration and so there's no permision to access that resource
+          schema:
+              $ref: '#/definitions/ErrorType'
+        500:
+          description: Some problem happened while contacting google servers
+          schema:
+              $ref: '#/definitions/ErrorType'
+
+
+## Oauth Endpoints
+  /oauth/{clientAccount}:
+    get:
+      summary: Starts the google oauth flow
+      description: |
+        Starts the google oauth flow by redirecting the user to a google domain URL
+      tags:
+        - oauth
+      parameters:
+        - "$ref" : "#/parameters/clientAccountParam"
+        - "$ref" : "#/parameters/authParam"
+      responses:
+        302:
+          description: Redirects the user to a google domain where it will authenticate the user.
+
+
 
 ###Generic filtering parameters
 

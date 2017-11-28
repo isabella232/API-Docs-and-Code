@@ -49,7 +49,6 @@ info:
           "UserId": "uniqueUserId_0904295",
           "AppId": "10000",
           "EventType": "UserRegistration",
-          "Version": "1.0",
           "CreatedOn": 1504287529000,
           "User": {
             "UserId": "uniqueUserId_0904295",

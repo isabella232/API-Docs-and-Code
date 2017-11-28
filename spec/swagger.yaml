@@ -278,49 +278,111 @@ x-tagGroups:
 
 paths:
 
-  /datatypes:
+  /data/types:
     get:
-      summary: Lists the available user & event attributes
+      summary: Lists the available data types and operators
       description: |
-        Lists the name and type of each attribute defined at the user and event level. This information
-        is necessary to know which attributes can be included in workflow condition expressions or
-        segmentation expressions.
-        Each attribute is identified by a name and a data type. The supported set of data types is
-        specified by the AttributeType enumeration ('type' property of the response).
+        Returns a list of all the supported data types and the list of operators that can be
+        applied on that data type.
       tags:
         - datatypes
 
-      operationId: getDataDictionary
+      operationId: getDataTypes
       produces:
         - application/json
       responses:
         200:
-          description: Returns the data dictionaries
+          description: Returns the list of data types and their applicable operators
           schema:
-            type: object
-            properties:
-              userAttributes:
-                description: The list of user attributes
-                type: array
-                items:
-                  $ref: '#/definitions/AttributeDefinition'
-              eventAttributes:
-                description: The list of event attributes
-                type: array
-                items:
-                  $ref: '#/definitions/AttributeDefinition'
-              operators:
-                description: |
-                  A map having as keys the available attribute types for building segmentation & condition expressions
-                  and as values the list of operators that are applicable for each respective attribute type.
-                  E.g. a mapping of the form AttributeType Integer -> [ 'Greater Than', 'Less Than', 'Equal',...] etc.
-                type: object
-                properties:
-                  attributeType:
-                    "$ref": "#/definitions/OperatorType"
-                additionalProperties:
-                  "$ref": "#/definitions/OperatorType"
+            "$ref": "#/definitions/OperatorType"
+            
+  /data/user:
+    get:
+      summary: Lists the available user attributes
+      description: |
+        Lists the name and type of each attribute defined at the user level. This information
+        is necessary to know which attributes can be included in workflow condition expressions when using the User dimension.
+        Each attribute is identified by a name and a data type. 
 
+      tags:
+        - datatypes
+
+      operationId: getUserDataDictionary
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Lists the name and type of each attribute defined at the user level. 
+          schema:
+            "$ref": "#/definitions/UserDataDictionaryType"
+    put:
+      summary: Updates the list of user attributes
+      description: |
+        Submits a new version of the available user attributes replacing the previous one.
+      tags:
+        - datatypes
+      operationId: updateUserDataDictionary
+      consumes: 
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - 
+          name: data 
+          in: body
+          required: true
+          schema:
+            "$ref": "#/definitions/UserDataDictionaryType"
+      responses:
+        200:
+          description: Returns the original user attributes list that was used as an input to this operation.
+          schema:
+            "$ref": "#/definitions/UserDataDictionaryUpdateResponse"
+              
+  /data/events:
+    get:
+      summary: Lists the available event attributes
+      description: |
+        Lists the name and type of each attribute defined at the user and event level. This information
+        is necessary to know which attributes can be included in workflow condition expressions when using the Event dimension.
+        Each attribute is identified by a name and a data type.
+      tags:
+        - datatypes
+
+      operationId: getEventsDataDictionary
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Lists the name and type of each attribute defined at the user and event level.
+          schema:
+            "$ref": "#/definitions/EventsDataDictionaryType"
+    put:
+      summary: Updates the list of event attributes and event types
+      description: |
+        Submits a new version of the available event attributes and event types replacing the previous one.
+      tags:
+        - datatypes
+      operationId: updateEventsDataDictionary
+      consumes: 
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - 
+          name: data 
+          in: body
+          required: true
+          schema:
+            "$ref": "#/definitions/EventsDataDictionaryType"
+      responses:
+        200:
+          description: |
+            Returns the original user attributes list that was used as an input to this operation.
+            If the changes introduce breaking changes then the operation will fail and a list of validation errors will be returned in the field validationErrors.
+          schema:
+            "$ref": "#/definitions/EventsDataDictionaryUpdateResponse"            
+                
 
 ##################################################################################
 #                      System calls
@@ -1524,15 +1586,158 @@ definitions:
       - DELETED
       - DRAFT
 
+  UserDataDictionaryType:
+    description: |
+      Defines the list of attributes that will potentially appear within the user context of incoming events.
+    type: object
+    properties:
+      description:
+        description: An optional, user-provided, description of the data contained in the data dictionary.
+        type: string
+      attributes:
+        description: The list of user attributes
+        type: array
+        items:
+          $ref: '#/definitions/AttributeDefinition'
+          
+  UserDataDictionaryUpdateResponse:
+    description: |
+      The response to an update operation on the user data types. It will contain the original request object and an additional validationErrors field that will contain any validation errors that prevented the update from happening.
+    allOf:
+      - $ref: '#/definitions/UserDataDictionaryType'
+      - type: object
+        properties:
+          validationErros:
+            $ref: '#/definitions/UserDataDictionaryValidationErrorsType'
+              
+  UserDataDictionaryValidationErrorsType:
+    type: object
+    description: |
+      Contains all the validation errors that might occur during an update operation of the user data types.
+      Only errors related to the attribute definitions in the user attributes pool can occur and these will be contained in the attributeErrors field. 
+    properties:
+      attributeErrors:
+        type: array
+        items:       
+          $ref: '#/definitions/AttributeValidationErrorType'
+
+  EventDataDictionaryValidationErrorsType:
+    type: object
+    description: |
+      Contains all the validation errors that might occur during an update operation of the event data types.
+      Errors related to the attribute definitions in the event attributes pool will be contained in the attributeErrors field. While errors related to the schema of a specific event type will be contained in the eventTypeErrors under the key that matches the event type constant.
+    properties:
+      attributeErrors:
+        description: Contains an entry for every attribute that didn't pass validation.
+        type: array
+        items:       
+          $ref: '#/definitions/AttributeValidationErrorType'
+      eventTypeErrors:
+        type: array
+        items:
+          $ref: '#/definitions/EventTypeValidationErrorType'
+
+  EventTypeValidationErrorType:
+    type: object
+    description: Contains the validation errors for a specific event type.
+    properties:
+      eventType:
+        type: string
+        description: The event type code
+      errorMessage:
+        type: string
+        description: A description of the nature of the error
+      attributeErrors:
+        description: If there was a problem with the attributes associated with this event type, then this field will contain a list of the attribute validation errors.
+        type: array
+        items:       
+          $ref: '#/definitions/AttributeValidationErrorType'
+        
+  AttributeValidationErrorType:
+    type: object
+    description: Describes the kind of a validation error related with a user or event attribute
+    properties:
+      attributeName:
+        type: string
+        description: The name of the attribute
+      errorMessage:
+        type: string
+        description: A description of the nature of the error
+
+
+  EventsDataDictionaryType:
+    description: |
+      Defines the possible types of events and the list of attributes that are expected within each event type.
+    type: object
+    properties:
+      description:
+        description: An optional, user-provided, description of the data contained in the data dictionary.
+        type: string
+      attributes:
+        description: The list of event attributes
+        type: array
+        items:
+          $ref: '#/definitions/AttributeDefinition'
+      eventTypes:
+        description: |
+          A list where each item is an object that specifies an event type and a list of attributes that are 
+          expected for this event type.
+        type: array
+        items:
+          "$ref": "#/definitions/EventTypeEntry"  
+
+  EventsDataDictionaryUpdateResponse:
+    description: |
+      The response to an update operation on the event data types. It will contain the original request object and an additional validationErrors field that will contain any validation errors that prevented the update from happening.
+    allOf:
+      - $ref: "#/definitions/EventsDataDictionaryType"
+      - type: object
+        properties:
+          validationErrors:
+            $ref: "#/definitions/EventDataDictionaryValidationErrorsType"
+            
+  EventTypeEntry:
+    description: Schema information for a specific event type.
+    type: object
+    properties:
+      type:
+        type: string
+        description: the event type as a string constant
+      attributes:
+        type: array
+        items:
+          $ref: '#/definitions/AttributeReference'
+        description: the list of attributes for this event type
+
+  AttributeReference:
+    description: References a specific attribute from the global pool of event attributes.
+    type: object
+    properties:
+      name:
+        type: string
+        description: the name of the attribute that is being referenced
+      mandatory:
+        type: boolean
+        description: indicates that this attribute must have a value for this event type.
+      
   AttributeDefinition:
-    description: Defines an attribute
+    description: Defines an attribute that can appear within the user or event contexts.
     type: object
     properties:
       name:
         type: string
         description: the name of the attribute
+      description:
+        type: string
+        description: an optional description for this attribute
       type:
         $ref: '#/definitions/AttributeType'
+      mandatory:
+        type: boolean
+        description: indicates that this attribute must have a value 
+      editable:
+        type: boolean
+        description: indicates that this attribute can be changed in some way or not.
 
   AttributeType:
     description: Enumeration of all supported data types for user and event attributes

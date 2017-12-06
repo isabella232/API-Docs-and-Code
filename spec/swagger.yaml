@@ -1720,6 +1720,9 @@ definitions:
       - ENTITY_NOT_FOUND
       - MALFORMED_REQUEST
       - INVALID_REQUEST 
+      - PERMISSION_DENIED
+      - NAME_CONFLICT
+      
 
 
   PagingType:

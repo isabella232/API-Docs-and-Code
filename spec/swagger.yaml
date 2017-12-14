@@ -264,6 +264,8 @@ tags:
     description: Management of workflows
   - name: reporting
     description: Reporting on workflows executions
+  - name: translations
+    description: Management of translation resources
 
 x-tagGroups:
   - name: System calls
@@ -275,6 +277,7 @@ x-tagGroups:
   - name: User journey management
     tags:
       - applications
+      - translations
       - workflows
       - abtests
       - reporting
@@ -904,6 +907,174 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorType'
+
+
+##################################################################################
+#                      Translation Resources
+##################################################################################
+
+  /translations:
+
+    parameters:
+      - "$ref": "#/parameters/authParam"
+
+###Get translation resources 
+    get:
+
+      summary: Get translation resources
+      description: |
+        List all translation resources, according to an optional set of filters. 
+      tags:
+        - translations
+      operationId: getTranslations
+      parameters:
+        - "$ref": "#/parameters/nameFilter"
+        - "$ref": "#/parameters/urlFilter"
+        - "$ref": "#/parameters/pagingPageParam"
+        - "$ref": "#/parameters/pagingPerPageParam"
+        - "$ref": "#/parameters/TranslationSortingParam"
+      #Consumes is useless for get operations, added here just for reference
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The set of translation resources that match 
+          schema:
+              type: object
+              properties:
+                paging:
+                  $ref: '#/definitions/PagingType'
+                items:
+                  description: Array of the returned translation resources
+                  type: array
+                  items:
+                    "$ref": '#/definitions/PopulatedTranslationResourceType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+    
+    
+    
+    post:
+      summary: Creates a translation resource
+      description: |
+        Creates a new translation resource 
+      tags:
+        - translations
+      operationId: creatTranslation
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/CreateTranslationResourceType'
+      responses:
+        201:
+          description: The translation resource was created successfully
+          schema:
+            $ref: '#/definitions/PopulatedTranslationResourceType'
+          headers:
+            Location:
+                description: The location of the created item
+                type: string
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+  /translations/{translationId}:
+    parameters:
+        - "$ref": "#/parameters/translationParam"
+        - "$ref": "#/parameters/authParam"
+        
+#### getTranslation
+
+    get:
+
+      summary: Get a translation resource
+      description: |
+        Return the identified translation resource
+      tags:
+        - translations
+      operationId: getTranslation
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The translation resource
+          schema:
+             "$ref": '#/definitions/PopulatedTranslationResourceType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The specified translation resource couldn't be found
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+
+###Update an existing translation resource
+    put:
+      summary: Updates an translation resource
+      description: |
+        Updates a translation resource by overriding the existing entry.
+      tags:
+        - translations
+      operationId: updateTranslationResource
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/UpdateTranslationResourceType'
+      responses:
+        200:
+          description: The entity was updates successfully
+          schema:
+            $ref: '#/definitions/PopulatedTranslationResourceType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+
 
 ##################################################################################
 #                       AB tests
@@ -1557,6 +1728,9 @@ definitions:
       - ENTITY_NOT_FOUND
       - MALFORMED_REQUEST
       - INVALID_REQUEST 
+      - PERMISSION_DENIED
+      - NAME_CONFLICT
+      
 
 
   PagingType:
@@ -1930,6 +2104,52 @@ definitions:
       - $ref: '#/definitions/CreateApplicationType'
       - $ref: '#/definitions/ObjectWithIdType'
 
+
+### Translation resource type
+
+  CoreTranslationResourceType:
+    type: object
+    description: Necessary information to create a translation resource
+    properties:
+        name:
+          type: string
+          description: The name of the translation resource
+        url:
+          type: string
+          description: The URL of the translation resource 
+        metadata:
+          type: string
+          description: Optional metadata, specific to the individual resource. E.g. the sheet in a google spreadheet.
+
+
+  CreateTranslationResourceType:
+    description: Necessary information to create a translation resource
+    required:
+      - name
+      - url
+    allOf:
+      - $ref: '#/definitions/CoreTranslationResourceType'
+
+ 
+  UpdateTranslationResourceType:
+    description: Fields to update in an existing translation resource
+    allOf:
+      - $ref: '#/definitions/CoreTranslationResourceType'
+
+
+  PopulatedTranslationResourceType:
+    description: Fully populated translation resource
+    required:
+      - name
+      - url
+      
+    allOf:
+      - $ref: '#/definitions/CoreTranslationResourceType'
+      - $ref: '#/definitions/ObjectWithIdType'
+
+
+
+####ABTest types
 
   ABTestRefType:
     description: The unique identifier of the AB test
@@ -2504,6 +2724,12 @@ parameters:
         required: true
         type: string
         description: The identifier of the application
+    translationParam:
+        name: translationId
+        in: path
+        required: true
+        type: string
+        description: The identifier of the translation resource
 
     workflowParam:
         name: workflow
@@ -2527,6 +2753,13 @@ parameters:
         required: false
         type: string
         description: Name prefix of the requested entity. If not specified, then all names are returned.
+
+    urlFilter:
+        name: url
+        in: query
+        required: false
+        type: string
+        description: URL prefix. 
 
     IdFilter:
         name: id
@@ -2663,6 +2896,18 @@ parameters:
           - 'name'
           - '-name'
 
+### Translation specific parameter
+
+    TranslationSortingParam:
+      name: orderby
+      description: Fields to sort by. Field name is for ascending order, -fieldName for descending order
+      in: query
+      type: array
+      items:
+        type: string
+        enum:
+          - 'name'
+          - '-name'
 
 # Reporting parameters
     reportingVersionFilter:

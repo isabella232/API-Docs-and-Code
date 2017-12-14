@@ -148,9 +148,9 @@ info:
     * ADWORDS_REMARKETING_ACTION - An action that adds the user to a Google Adwords remarketing user list.
 
     Multiple action parameters can include dynamic content by using a notation such as ${user.Email}. Currently three types of dynamic content are supported:
-    *${user.<userAttribute>} is replaced by the value of the user attribute
-    *${event.<eventAttribute>} is replaced by the value of the event attribute
-    *${translation.<translationId>[<key>][<alt>]} is replaced by looking up the <alt> alternative of key <key> in translation resource with ID <translationId>. 
+    * ${user.userAttribute} is replaced by the value of the user attribute
+    * ${event.eventAttribute} is replaced by the value of the event attribute
+    * ${translation.translationId[key][alt]} is replaced by looking up the 'alt' alternative of key 'key' in translation resource with ID 'translationId'. 
     For instance,  ${translation.10121[WELCOME_MSG][EN]} will be replaced with the 'EN' alternative of the key 'WELCOME_MSG' from resource 10121. The ${} 
     notation can be nested. Therefore ${translation.10121[WELCOME_MSG][${user.Language}]} will be replaced according to the value in the 'Language' user attribute.
     

@@ -2116,10 +2116,12 @@ definitions:
           description: The name of the translation resource
         url:
           type: string
-          description: The URL of the translation resource 
+          description: The URL of the translation resource. At the moment, google drive spreasheets are supported. 
         metadata:
           type: string
-          description: Optional metadata, specific to the individual resource. E.g. the sheet in a google spreadheet.
+          description: | 
+            Optional metadata, specific to the individual resource. In the case of google spreadsheets, if a 
+            spreadsheet has a single sheet, metadata can be left empty. Otherwise it must specify the name of a sheet in the spreadsheet.
 
 
   CreateTranslationResourceType:

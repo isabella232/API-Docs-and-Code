@@ -152,7 +152,7 @@ info:
     * ${event.eventAttribute} is replaced by the value of the event attribute
     * ${translation.translationId[key][alt]} is replaced by looking up the 'alt' alternative of key 'key' in translation resource with ID 'translationId'. 
     For instance,  ${translation.10121[WELCOME_MSG][EN]} will be replaced with the 'EN' alternative of the key 'WELCOME_MSG' from resource 10121. The ${} 
-    notation can be nested. Therefore ${translation.10121[WELCOME_MSG][${user.Language}]} will be replaced according to the value in the 'Language' user attribute.
+    notation can be nested. Therefore ${translation.10121[WELCOME_MSG][${user.language}]} will be replaced according to the value in the 'language' user attribute.
     
           
     Each type of node has a set of predefined outgoing transitions as follows:

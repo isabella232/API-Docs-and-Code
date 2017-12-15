@@ -1634,8 +1634,47 @@ paths:
 
 
 
-###Generic filtering parameters
+## Translations Info
 
+  /translations/{translationId}/{translationKeyId}:
+    get:
+      summary: Returns all the translations.
+      description: |
+        Returns all the translations from the translation key located in the translation resource specified.
+      tags:
+        - translations
+      parameters:
+        - "$ref" : "#/parameters/translationParam"
+        - "$ref" : "#/parameters/translationKeyParam"
+      responses: 
+        200:
+          description: The response will contain a map language -> content
+
+  /translations/{translationId}/languages:
+    get:
+      summary: Returns all the languages available 
+      description: |
+        Returns all the languages available for the specified translation resource.
+      tags:
+        - translations  
+      parameters:
+        - "$ref" : "#/parameters/translationParam"
+      responses: 
+        200:
+          description: The response will be a list of Strings each one being a language available
+
+  /translations/{translationId}/keys:
+    get:
+      summary: Returns all the translations.
+      description: |
+        Returns all the translation keys from the translation resource specified.
+      tags:
+        - translations
+      parameters:
+        - "$ref" : "#/parameters/translationParam"
+      responses: 
+        200:
+          description: The response will be a list of Strings each one being a translation key 
 
 
 ##################################################################################
@@ -2733,6 +2772,13 @@ parameters:
         type: string
         description: The identifier of the translation resource
 
+    translationKeyParam:
+        name: translationKeyId
+        in: path
+        required: true
+        type: string
+        description: The identifier of the translation key id
+
     workflowParam:
         name: workflow
         in: path
@@ -2910,6 +2956,7 @@ parameters:
         enum:
           - 'name'
           - '-name'
+
 
 # Reporting parameters
     reportingVersionFilter:

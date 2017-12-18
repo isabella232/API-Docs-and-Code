@@ -16,22 +16,30 @@ To play around with a few examples, we recommend Postman. Simply tap the button 
 
 **Example event**
 
-Below you find an example event. Events normally contain event properties and user properties. The user properties will be stored with the associated user.
+Below you find an example event that triggers a "Welcome email". Events can contain event properties and user properties. The user properties will be stored with the associated user. Further properties can be specified via the API.
 
 ![Events](https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/web/DataTigerEvents.png)
 
-Event parameters:
+Event properties:
 
-* UserId: a unique id of the user that is associated with this particular event. For the purpose of this guide we will use an email address.  
-* AppID: the id of the application the workflow you want to trigger resides in. For the purpose of this guide we will use the default application "10000"
-* EventType: the event type that triggers the workflow you want to run. In the case of this demo we use "DemoEmailSend" as the trigger. 
-    "Version": "1",
-    "CreatedOn": 0,
-* User: here all the user properties required for this event are being passed. In the case of this guide, we will pass the following:
-* UserId: required again to make the event processing more efficient
-* AppId: also required again to make the event processing more efficient
-* Email: the email address of the user, for sending the welcome email. Best to use your own email address. 
-* FirstName: used to customize the welcome email
+| Event Property        | Description |
+| ------------- |:-------------:|
+| UserId     | A unique id of the user that is associated with this particular event. For the purpose of this guide we will use an email address. |
+| AppId      | The id of the application the workflow you want to trigger resides in. For the purpose of this guide we will use the default application "10000".   |
+| EventType | The event type that triggers the workflow you want to run. In the case of this demo we use "DemoEmailSend" as the trigger. |
+
+
+User properties:
+
+| User Property        | Description |
+| ------------- |:-------------:|
+| User | are neat      |
+| UserId | Required again to make the event processing more efficient      |
+| AppId | Required again to make the event processing more efficient     |
+| Email | The email address of the user, for sending the welcome email  |
+| FirstName | Used to personalize the welcome email      |
+
+
 
 
 The code below shows an example of a welcome event. Please customize the parameters above and replace the x-api-key value with your own DataTiger Events API key. 

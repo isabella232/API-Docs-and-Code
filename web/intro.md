@@ -13,10 +13,14 @@ To play around with a few examples, we recommend Postman. Simply tap the button 
 
 [![Postman](https://run.pstmn.io/button.svg)](https://github.com/DataTigerGitHub/API-Docs-and-Code/blob/master/web/postman.md)
 
+
+**Example event**
+
 Below you find an example event. Events normally contain event properties and user properties. The user properties will be stored with the associated user.
 
 ![Events](https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/web/DataTigerEvents.png)
 
+Event parameters:
 
 * UserId: a unique id of the user that is associated with this particular event. For the purpose of this guide we will use an email address.  
 * AppID: the id of the application the workflow you want to trigger resides in. For the purpose of this guide we will use the default application "10000"

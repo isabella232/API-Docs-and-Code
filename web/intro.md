@@ -33,7 +33,6 @@ User properties:
 
 | User Property        | Description |
 | ------------- |:-------------:|
-| User | are neat      |
 | UserId | Required again to make the event processing more efficient      |
 | AppId | Required again to make the event processing more efficient     |
 | Email | The email address of the user, for sending the welcome email  |

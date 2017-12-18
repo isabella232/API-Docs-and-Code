@@ -25,7 +25,7 @@ Event properties:
 | Event Property | Description |
 |:------------- |:-------------|
 | UserId     | A unique id of the user |
-| AppId      | The id of the application the workflow you want to trigger |
+| AppId      | The id of the application the user journey (EventType) belongs to |
 | EventType | The event type that triggers the workflow |
 
 
@@ -36,10 +36,8 @@ User properties:
 |:------------- |:-------------|
 | UserId | Required again to make the event processing more efficient |
 | AppId | Required again to make the event processing more efficient |
-| Email | The email address of the user, for sending the welcome email |
+| Email | The email address of the user for sending the welcome email |
 | FirstName | Used to personalize the welcome email |
-
-
 
 
 The code below shows an example of a welcome event. Please customize the parameters above and replace the x-api-key value with your own DataTiger Events API key. 
@@ -48,7 +46,7 @@ The code below shows an example of a welcome event. Please customize the paramet
 var request = require("request");
 
 var options = { method: 'POST',
-  url: 'https://events.datatiger.com/LATEST/events',
+  url: 'https://events.datatiger.com/events',
   headers: 
    { 'x-api-key': 'Your DataTiger Events API key',
      'content-type': 'application/json',

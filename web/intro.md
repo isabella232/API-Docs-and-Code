@@ -23,7 +23,7 @@ Below you find an example event that triggers a "Welcome email". Events can cont
 Event properties:
 
 | Event Property        | Description |
-| ------------- |:-------------:|
+|:------------- |:-------------|
 | UserId     | A unique id of the user that is associated with this particular event. For the purpose of this guide we will use an email address. |
 | AppId      | The id of the application the workflow you want to trigger resides in. For the purpose of this guide we will use the default application "10000".   |
 | EventType | The event type that triggers the workflow you want to run. In the case of this demo we use "DemoEmailSend" as the trigger. |
@@ -32,7 +32,7 @@ Event properties:
 User properties:
 
 | User Property        | Description |
-| ------------- |:-------------:|
+|:------------- |:-------------|
 | UserId | Required again to make the event processing more efficient      |
 | AppId | Required again to make the event processing more efficient     |
 | Email | The email address of the user, for sending the welcome email  |

@@ -258,6 +258,8 @@ tags:
     description: Reporting on workflows executions
   - name: translations
     description: Management of translation resources
+  - name: oauth
+    description: OAuth endpoints
 
 x-tagGroups:
   - name: System calls
@@ -266,6 +268,7 @@ x-tagGroups:
       - authentication
       - settings
       - users
+      - oauth
   - name: User journey management
     tags:
       - applications

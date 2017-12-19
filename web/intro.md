@@ -18,7 +18,7 @@ To play around with a few examples, we recommend Postman. Simply tap the button 
 
 Below you find an example event that triggers a "Welcome email". Events can contain event properties and user properties. The user properties will be stored with the associated user. Further properties can be specified via the API.
 
-![Events](https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/web/DataTigerEvents.png)
+![Events](images/event-diagram.png)
 
 Event properties:
 

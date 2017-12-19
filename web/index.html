@@ -1,38 +1,46 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <script src="https://cdn.rawgit.com/webcomponents/webcomponentsjs/v0.7.15/webcomponents-lite.min.js"></script>
-    <link rel="import" href="https://cdn.rawgit.com/zerodevx/zero-md/v0.2.0/build/zero-md.html">
-    <link rel="stylesheet" href="https://cdn.rawgit.com/zerodevx/zero-md/v0.2.0/markdown-themes/default.css">
-    <link rel="stylesheet" href="https://cdn.rawgit.com/zerodevx/zero-md/v0.2.0/highlight-themes/default.css">
-    <link rel="stylesheet" href="style.css">
-    
-    <title>DataTiger APIs - Introduction</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-  </head>
-  <body>
-  
-  
 
-    <!-- Top navigation placeholder -->
-         
-    <nav>
-      <ul id="links_container">
-	      <li><a href="http://www.datatiger.com"><img src="http://stark-journey-33958.herokuapp.com/img/Data%20Tiger%20Logo%20in%20Left.png" height="42" hspace="20"></a></li>
-	      <li><a class="selected_menu" href="index.html">Introduction</a></li>
-	      <li><a href="events.html">Events API</a></li>
-	      <li><a href="management.html">Management API</a></li>
+<head>
+  <script src="https://cdn.rawgit.com/webcomponents/webcomponentsjs/v0.7.15/webcomponents-lite.min.js"></script>
+  <link rel="import" href="https://cdn.rawgit.com/zerodevx/zero-md/v0.2.0/build/zero-md.html" />
+  <!-- <link rel="stylesheet" href="https://cdn.rawgit.com/zerodevx/zero-md/v0.2.0/markdown-themes/default.css" /> -->
+  <link rel="stylesheet" href="https://cdn.rawgit.com/zerodevx/zero-md/v0.2.0/highlight-themes/default.css" />
+  <link rel="stylesheet" href="https://use.typekit.net/liu2mjf.css" />
+  <link rel="stylesheet" href="styles/normalize.min.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/md.css" />
+  <title>DataTiger APIs - Introduction</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+</head>
+
+<body>
+  <header class="header">
+    <nav class="nav">
+      <div>
+        <a href="https://www.datatiger.com">
+          <img src="images/dt-docs-logo-w-wordmark.svg" width="257" height="57" alt="Data Tiger" />
+        </a>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-menu-item">
+          <a class="nav-menu-link active" href="index.html">Introduction</a>
+        </li>
+        <li class="nav-menu-item">
+          <a class="nav-menu-link" href="events.html">Events API</a>
+        </li>
+        <li class="nav-menu-item">
+          <a class="nav-menu-link" href="management.html">Management API</a>
+        </li>
       </ul>
     </nav>
-    
+  </header>
+  <main class="main narrow">
+    <zero-md file="intro.md">
+      <article class="md-html"></article>
+    </zero-md>
+  </main>
+</body>
 
-    <div id="intro" align="left">
-    	<zero-md file="https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/web/intro.md"><div class="md-html"></div></zero-md>
-	</div>
-    
-    
-    <redoc scroll-y-offset="body > nav"></redoc>
-
-  </body>
 </html>

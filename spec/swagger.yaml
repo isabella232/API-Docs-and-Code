@@ -1639,7 +1639,7 @@ paths:
 
 ## Translations Info
 
-  /translations/{translationId}/{translationKeyId}:
+  /translations/{translationId}/keys/{translationKeyId}:
     get:
       summary: Returns all the translations.
       description: |
@@ -1668,7 +1668,7 @@ paths:
 
   /translations/{translationId}/keys:
     get:
-      summary: Returns all the translations.
+      summary: Returns all the keys available
       description: |
         Returns all the translation keys from the translation resource specified.
       tags:

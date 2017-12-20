@@ -40,31 +40,37 @@ User properties:
 The code below shows an example of a welcome event. Please customize the parameters above and replace the x-api-key value with your own DataTiger Events API key. 
 
 ```js
-var request = require("request");
+var request = require('request');
 
-var options = { method: 'POST',
+var options = {
+  method: 'POST',
   url: 'https://events.datatiger.com/events',
-  headers: 
-   { 'x-api-key': 'Your DataTiger Events API key',
-     'content-type': 'application/json',
-     accept: 'application/json' },
-  body: 
-   { userId: 'your@email.com',
-     events: 
-      [ { UserId: 'your@email.com',
-          AppId: '10000',
-          EventType: 'DemoEmailSend',
-          Version: '1',
-          CreatedOn: 0,
-          User: 
-           { UserId: 'your@email.com',
-             AppId: '10000',
-             Version: '1',
-             Email: 'your@email.com',
-             FirstName: 'Your first name' } } ] },
-  json: true };
+  headers: {
+    'x-api-key': 'Your DataTiger Events API key',
+    'content-type': 'application/json',
+    accept: 'application/json'
+  },
+  body: {
+    userId: 'your@email.com',
+    events: [{
+      UserId: 'your@email.com',
+      AppId: '10000',
+      EventType: 'DemoEmailSend',
+      Version: '1',
+      CreatedOn: 0,
+      User: {
+        UserId: 'your@email.com',
+        AppId: '10000',
+        Version: '1',
+        Email: 'your@email.com',
+        FirstName: 'Your first name'
+      }
+    }]
+  },
+  json: true
+};
 
-request(options, function (error, response, body) {
+request(options, function(error, response, body) {
   if (error) throw new Error(error);
 
   console.log(body);

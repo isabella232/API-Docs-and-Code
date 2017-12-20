@@ -268,6 +268,9 @@ tags:
     description: Management of translation resources
   - name: oauth
     description: OAuth endpoints
+  - name: stepdata
+    description: Workflow step data
+  
 
 x-tagGroups:
   - name: System calls
@@ -284,6 +287,7 @@ x-tagGroups:
       - workflows
       - abtests
       - reporting
+      - stepdata
   - name: Data types
     tags:
       - datatypes      

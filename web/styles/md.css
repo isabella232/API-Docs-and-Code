@@ -1,6 +1,12 @@
 .md-html {
   padding: 30px 0;
-  color: #64696d;
+  font-size: 0.875em;
+  color: #263238;
+}
+
+.md-html b,
+.md-html strong {
+  font-weight: 400;
 }
 
 .md-html h1,
@@ -9,9 +15,10 @@
 .md-html h4,
 .md-html h5,
 .md-html h6 {
-  font-family: "brandon-grotesque", serif;
-  font-weight: 500;
-	color: #582c5f;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  /* color: #582c5f; */
+  color: #0033a0;
 }
 
 .md-html h1 {
@@ -49,12 +56,10 @@
   height: 0;
 }
 
-.md-html p {
-  line-height: 1.6;
-}
-
+.md-html p,
 .md-html ul,
 .md-html ol {
+  font-weight: 300;
   line-height: 1.6;
 }
 
@@ -77,28 +82,33 @@
 }
 
 .md-html table th {
-  font-weight: bold;
+  padding: 10px;
+
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  font-size: 0.929em;
+  color: #26323880;
+  text-transform: uppercase;
 }
 
-.md-html table th,
 .md-html table td {
-  padding: 6px 13px;
-  border: 1px solid #ddd;
+  padding: 10px;
+  font-weight: 300;
 }
 
 .md-html table tr {
-  background-color: #fff;
-  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #2632384d;
 }
 
-.md-html table tr:nth-child(2n) {
+/* .md-html table tr:nth-child(2n) {
   background-color: #f9fafc;
-}
+} */
 
 .md-html pre {
   padding: 10px;
   overflow: auto;
-  background: #f9fafc;
+  background: #263238;
+  color: #fff;
 }
 
 .md-html code,

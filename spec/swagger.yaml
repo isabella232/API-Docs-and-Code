@@ -1081,6 +1081,46 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
+##################################################################################
+#                       Extra translations concepts
+##################################################################################
+
+
+  /ext/googlesheets/sheets:
+    parameters:
+      - "$ref": "#/parameters/authParam"
+
+###Get sheets of a google docs spreadsheets
+    get:
+
+      summary: Get the list of sheets in a google spreadsheet
+      description: |
+        Get the list of sheets in a google spreadsheet 
+      tags:
+        - translations
+      operationId: getGoogleSpreadSheetSheets
+      parameters:
+        - "$ref": "#/parameters/url"
+      #Consumes is useless for get operations, added here just for reference
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The set of translation resources that match 
+          schema:
+              type: array
+              items:
+                type: string
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
 
 
 ##################################################################################
@@ -2964,6 +3004,14 @@ parameters:
           - 'name'
           - '-name'
 
+# Generic query parameters
+
+    url:
+        name: url
+        in: query
+        required: false
+        type: string
+        description: URL prefix. 
 
 # Reporting parameters
     reportingVersionFilter:

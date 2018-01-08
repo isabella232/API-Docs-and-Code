@@ -1108,15 +1108,11 @@ paths:
         - application/json
       responses:
         200:
-          description: The set of translation resources that match 
+          description: A list of the available sheets 
           schema:
               type: array
               items:
                 type: string
-        400:
-          description: Malformed request
-          schema:
-            $ref: '#/definitions/ErrorType'
         default:
           description: Unexpected error
           schema:

@@ -214,7 +214,7 @@ info:
                               "token": "%firstName%",
                               "value": "${user.FirstName}"
                           }
-                      ],
+                      ],home
                       "sandboxed": false
                   },
                   {
@@ -270,6 +270,8 @@ tags:
     description: OAuth endpoints
   - name: stepdata
     description: Workflow step data
+  - name: dev
+    description: Integration tools for developers
   
 
 x-tagGroups:
@@ -291,10 +293,74 @@ x-tagGroups:
   - name: Data types
     tags:
       - datatypes      
-
+  - name: Developer Tools 
+    tags:
+      - dev
 
 
 paths:
+  /dev/applications/{application}/users/{userId}:
+    get:
+      summary: returns the properties of a specific user within the context of a specific application
+      description: |
+        this endpoint will return a JSON document containing the properties of the user identified
+        by the specified user ID. as different applications can have distinct user identifiers,the application identifier
+        is also required at the path level.
+      tags:
+        - dev
+      operationId: getUserProperties
+      producers:
+        - application/json
+      responses:
+        200:
+          description: A JSON document containing the properties of the specified user.
+        400:
+          description: The application or the specified user does not exist.
+        500:
+          description: An internal error has occurred 
+  /dev/events/validate:
+    post:
+      summary: Validates the input event returning a list of validation errors in the case of error.
+      description: |
+        Use this endpoint to check whether an event would have been accepted by the system. In case the event 
+        is classified as invalid, the response contains information to pinpoint the exact cause of the validation failure.
+      tags:
+        - dev 
+      operationId: validateEvent
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The event has passed the validation check successfully. The response will be empty in this case.
+        400:
+          description: |
+           The event has failed the validation, the response will contain a description of the validation errors.
+          schema:
+            "$ref": "#/definitions/ValidateEventResponse"
+
+  /dev/events/record:
+    post:
+      summary: Validates the input event and passes the event downstream for further processing
+
+      description: |
+        Validates the input event and if the validation is successfull it then writes the event into the event stream.
+      tags:
+        - dev 
+      operationId: validateAndRecordEvent
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The event has passed the validation check successfully and was pushed into the events stream. The response will be empty in this case.
+        400:
+          description: |
+           The event has failed the validation, the response will contain a description of the validation errors.
+          schema:
+            "$ref": "#/definitions/ValidateEventResponse"
 
   /data/types:
     get:
@@ -2729,7 +2795,8 @@ definitions:
         $ref: '#/definitions/TimeUnitType'
 
   ISODateTimeType:
-    description: ISODateTimeType, ISO8601 date format with optional time part. For instance, 1970-01-18T09:19:41.204+0000
+    description: |
+      ISODateTimeType, ISO8601 date format with optional time part. For instance, 1970-01-18T09:19:41.204+0000
     type: string
     format: date-time
 
@@ -2738,6 +2805,60 @@ definitions:
     type: string
     enum: [HOURS,DAYS,WEEKS,MONTHS]
 
+  ValidateEventResponse:
+    type: object
+    properties:
+      invalidEventType:
+        type: boolean
+        description: indicates if the event type is invalid as it does not appear in the event data schema
+      missingAttributes:
+        type: array
+        items:
+          type: string
+        description: A list of attributes that are required for this event type but were not found in the input event
+      conversionErrors:
+        type: array
+        items:
+          $ref: '#/definitions/ConversionErrorType'
+        description: |
+         A list containing an item for every attribute for which it was not possible to convert
+         the given input value to the required type for this field, e.g. the input was a boolean 
+         while the event schema declares this field as a date.   
+      unknownUserAttributes:
+        type: array
+        items:
+          type: string
+        description: |
+        Contains a list of user attributes that were included in the user object of the input event
+        but are not declared in the user data schema.
+      unknownEventAttributes:
+        type: array
+        items:
+          type: string
+        description: |
+        Contains a list of event attributes that were included in the input event
+        but are not declared in the event data schema.
+      extraEventAttributes:
+        type: array
+        items:
+          type: string
+        description: |
+        Contains a list of event attributes that were included in the input event
+        but are not included in the declaration of this event type in the user data schema.
+
+
+  ConversionErrorType:
+    type: object
+    properties:
+      attribute:
+        type: string
+        description: The name of the affected attribute
+      expectedType:
+        type: string
+        description: The expected type for the attribute as declared in the event schema
+      actualType:       
+        type: string
+        description: The deduced type for the attribute as given in the input event
 
 ##################################################################################
 #                       PARAMETERS

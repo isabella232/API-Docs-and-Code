@@ -1146,7 +1146,68 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorType'
+    
+    delete:
+      summary: Deletes a translation resource
+      description: |
+        Deletes a translation resource
+      tags:
+        - translations
+      operationId: deleteTranslationResource 
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - text/plain
+      responses:
+        204:
+          description: The translation resource was deleted succesfully 
+          schema:
+            type: string
+        404:
+          description: The translation resource was not found
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
 
+##################################################################################
+#                       Extra translations concepts
+##################################################################################
+
+
+  /ext/googlesheets/sheets:
+    parameters:
+      - "$ref": "#/parameters/authParam"
+
+###Get sheets of a google docs spreadsheets
+    get:
+
+      summary: Get the list of sheets in a google spreadsheet
+      description: |
+        Get the list of sheets in a google spreadsheet 
+      tags:
+        - translations
+      operationId: getGoogleSpreadSheetSheets
+      parameters:
+        - "$ref": "#/parameters/url"
+      #Consumes is useless for get operations, added here just for reference
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        200:
+          description: A list of the available sheets 
+          schema:
+              type: array
+              items:
+                type: string
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
 
 
 ##################################################################################
@@ -3085,6 +3146,14 @@ parameters:
           - 'name'
           - '-name'
 
+# Generic query parameters
+
+    url:
+        name: url
+        in: query
+        required: false
+        type: string
+        description: URL prefix. 
 
 # Reporting parameters
     reportingVersionFilter:

@@ -240,7 +240,7 @@ info:
     
   version: "1.0.0"
 
-host: preprod.api.datatiger.com
+host: api.datatiger.com
 basePath: /
 schemes:
   - https
@@ -299,17 +299,54 @@ x-tagGroups:
 
 
 paths:
+
+  /dev/events:
+    get:
+      summary: returns a list of events that were received for a specific user within a given date range
+      description: |
+        This endpoint allows you to retrieve the events that were captured for a specific user and within
+        a given date range. A user is identified by the application identifier and the user identifier. You can also
+        search for only specific type of event using the query parameter eventType. 
+        There is a restriction on the number of days that your input date range can span which at the moment is set to 7 days.
+      tags:
+        - dev
+      operationId: getEvents
+      parameters:
+        - "$ref": "#/parameters/getEventsUserIdFilter"
+        - "$ref": "#/parameters/getEventsAppIdFilter"
+        - "$ref": "#/parameters/getEventsEventTypeFilter"
+        - "$ref": "#/parameters/getEventsStartTimeFilter"
+        - "$ref": "#/parameters/getEventsEndTimeFilter"
+        - "$ref": "#/parameters/getEventsMaxResultsFilter"
+      produces:
+        - application/json
+      responses:
+        200:
+          description: |
+            A JSON document that contains the list of events that were found for that user and matching the search criteria.
+            The list is ordered by the creation date of the events in descending order, i.e. the most recent events appear first.            
+          schema:
+            "$ref": "#/definitions/GetEventsResponse"
+        401:
+          description: |
+            the request was rejected because it concerned an application identifier that doesn't exist in this account.
+
+
   /dev/applications/{application}/users/{userId}:
+    parameters:
+        - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/getUserPropertiesUserIdParam"
+    
     get:
       summary: returns the properties of a specific user within the context of a specific application
       description: |
-        this endpoint will return a JSON document containing the properties of the user identified
+        This endpoint will return a JSON document containing the properties of the user identified
         by the specified user ID. as different applications can have distinct user identifiers,the application identifier
         is also required at the path level.
       tags:
         - dev
       operationId: getUserProperties
-      producers:
+      produces:
         - application/json
       responses:
         200:
@@ -2890,22 +2927,22 @@ definitions:
         items:
           type: string
         description: |
-        Contains a list of user attributes that were included in the user object of the input event
-        but are not declared in the user data schema.
+          Contains a list of user attributes that were included in the user object of the input event
+          but are not declared in the user data schema.
       unknownEventAttributes:
         type: array
         items:
           type: string
         description: |
-        Contains a list of event attributes that were included in the input event
-        but are not declared in the event data schema.
+          Contains a list of event attributes that were included in the input event
+          but are not declared in the event data schema.
       extraEventAttributes:
         type: array
         items:
           type: string
         description: |
-        Contains a list of event attributes that were included in the input event
-        but are not included in the declaration of this event type in the user data schema.
+          Contains a list of event attributes that were included in the input event
+          but are not included in the declaration of this event type in the user data schema.
 
 
   ConversionErrorType:
@@ -2921,6 +2958,36 @@ definitions:
         type: string
         description: The deduced type for the attribute as given in the input event
 
+  GetEventsResponse:
+    type: object
+    properties:
+      events:
+        type: array
+        items:
+          type: object
+        description: | 
+          A list of events that matched the input search criteria,each event is represented by a JSON object
+          whose schema is customer specific
+
+      request:
+        type: object
+        properties:
+          userId:
+            type: string
+            description: the identifier of the user for which the events were found
+          applicationId:
+            type: string
+            description: the identifier of the application in which the user belongs
+          eventType:
+            type: string
+            description: |
+              if a value is set, then only events of this type will be returned
+          startTime:
+            $ref: '#/definitions/ISODateTimeType'
+          endTime:
+            $ref: '#/definitions/ISODateTimeType'
+            
+        
 ##################################################################################
 #                       PARAMETERS
 ##################################################################################
@@ -3187,3 +3254,56 @@ parameters:
       enum: [HOURS,DAYS,WEEKS,MONTHS]
       description: |
         The time unit on which to aggregate the reported statistics.
+
+    getEventsUserIdFilter:
+      name: userId
+      in: query
+      required: true
+      type: string
+      description: the identifier of the user for which the events were found
+
+    getEventsAppIdFilter:
+      name: appId
+      in: query
+      required: true
+      type: string
+      description: the identifier of the application in which the user belongs
+
+    getEventsEventTypeFilter:
+      name: eventType
+      in: query
+      required: false
+      type: string
+      description: |
+       if a value is set, then only events of this type will be returned. 
+
+    getEventsStartTimeFilter:
+      name: startTime
+      in: query
+      required: false
+      type: string
+      description: |
+        Defines the start of the data range that must contain the creation date of each event. If not defined, the start time will be set to half an hour ago.
+
+    getEventsEndTimeFilter:
+      name: endTime
+      in: query
+      required: false
+      type: string
+      description: |
+        Defines the end of the data range that must contain the creation date of each event. If not defined it will default to one hour after the start time.
+
+    getEventsMaxResultsFilter:
+      name: maxResults
+      in: query
+      required: false
+      type: number
+      description: |
+        Limits the number of events that will be returned by this call. If not set it will default to 50.
+
+    getUserPropertiesUserIdParam:
+      name: userId
+      in: path
+      required: true
+      type: string
+      description: The identifier of the user whose properties should be returned

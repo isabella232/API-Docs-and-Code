@@ -214,7 +214,7 @@ info:
                               "token": "%firstName%",
                               "value": "${user.FirstName}"
                           }
-                      ],
+                      ],home
                       "sandboxed": false
                   },
                   {
@@ -240,7 +240,7 @@ info:
     
   version: "1.0.0"
 
-host: preprod.api.datatiger.com
+host: api.datatiger.com
 basePath: /
 schemes:
   - https
@@ -270,6 +270,8 @@ tags:
     description: OAuth endpoints
   - name: stepdata
     description: Workflow step data
+  - name: dev
+    description: Integration tools for developers
   
 
 x-tagGroups:
@@ -291,10 +293,111 @@ x-tagGroups:
   - name: Data types
     tags:
       - datatypes      
-
+  - name: Developer Tools 
+    tags:
+      - dev
 
 
 paths:
+
+  /dev/events:
+    get:
+      summary: returns a list of events that were received for a specific user within a given date range
+      description: |
+        This endpoint allows you to retrieve the events that were captured for a specific user and within
+        a given date range. A user is identified by the application identifier and the user identifier. You can also
+        search for only specific type of event using the query parameter eventType. 
+        There is a restriction on the number of days that your input date range can span which at the moment is set to 7 days.
+      tags:
+        - dev
+      operationId: getEvents
+      parameters:
+        - "$ref": "#/parameters/getEventsUserIdFilter"
+        - "$ref": "#/parameters/getEventsAppIdFilter"
+        - "$ref": "#/parameters/getEventsEventTypeFilter"
+        - "$ref": "#/parameters/getEventsStartTimeFilter"
+        - "$ref": "#/parameters/getEventsEndTimeFilter"
+        - "$ref": "#/parameters/getEventsMaxResultsFilter"
+      produces:
+        - application/json
+      responses:
+        200:
+          description: |
+            A JSON document that contains the list of events that were found for that user and matching the search criteria.
+            The list is ordered by the creation date of the events in descending order, i.e. the most recent events appear first.            
+          schema:
+            "$ref": "#/definitions/GetEventsResponse"
+        401:
+          description: |
+            the request was rejected because it concerned an application identifier that doesn't exist in this account.
+
+
+  /dev/applications/{application}/users/{userId}:
+    parameters:
+        - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/getUserPropertiesUserIdParam"
+    
+    get:
+      summary: returns the properties of a specific user within the context of a specific application
+      description: |
+        This endpoint will return a JSON document containing the properties of the user identified
+        by the specified user ID. as different applications can have distinct user identifiers,the application identifier
+        is also required at the path level.
+      tags:
+        - dev
+      operationId: getUserProperties
+      produces:
+        - application/json
+      responses:
+        200:
+          description: A JSON document containing the properties of the specified user.
+        400:
+          description: The application or the specified user does not exist.
+        500:
+          description: An internal error has occurred 
+  /dev/events/validate:
+    post:
+      summary: Validates the input event returning a list of validation errors in the case of error.
+      description: |
+        Use this endpoint to check whether an event would have been accepted by the system. In case the event 
+        is classified as invalid, the response contains information to pinpoint the exact cause of the validation failure.
+      tags:
+        - dev 
+      operationId: validateEvent
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The event has passed the validation check successfully. The response will be empty in this case.
+        400:
+          description: |
+           The event has failed the validation, the response will contain a description of the validation errors.
+          schema:
+            "$ref": "#/definitions/ValidateEventResponse"
+
+  /dev/events/record:
+    post:
+      summary: Validates the input event and passes the event downstream for further processing
+
+      description: |
+        Validates the input event and if the validation is successfull it then writes the event into the event stream.
+      tags:
+        - dev 
+      operationId: validateAndRecordEvent
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The event has passed the validation check successfully and was pushed into the events stream. The response will be empty in this case.
+        400:
+          description: |
+           The event has failed the validation, the response will contain a description of the validation errors.
+          schema:
+            "$ref": "#/definitions/ValidateEventResponse"
 
   /data/types:
     get:
@@ -2793,7 +2896,8 @@ definitions:
         $ref: '#/definitions/TimeUnitType'
 
   ISODateTimeType:
-    description: ISODateTimeType, ISO8601 date format with optional time part. For instance, 1970-01-18T09:19:41.204+0000
+    description: |
+      ISODateTimeType, ISO8601 date format with optional time part. For instance, 1970-01-18T09:19:41.204+0000
     type: string
     format: date-time
 
@@ -2802,7 +2906,91 @@ definitions:
     type: string
     enum: [HOURS,DAYS,WEEKS,MONTHS]
 
+  ValidateEventResponse:
+    type: object
+    properties:
+      invalidEventType:
+        type: boolean
+        description: indicates if the event type is invalid as it does not appear in the event data schema
+      missingAttributes:
+        type: array
+        items:
+          type: string
+        description: A list of attributes that are required for this event type but were not found in the input event
+      conversionErrors:
+        type: array
+        items:
+          $ref: '#/definitions/ConversionErrorType'
+        description: |
+         A list containing an item for every attribute for which it was not possible to convert
+         the given input value to the required type for this field, e.g. the input was a boolean 
+         while the event schema declares this field as a date.   
+      unknownUserAttributes:
+        type: array
+        items:
+          type: string
+        description: |
+          Contains a list of user attributes that were included in the user object of the input event
+          but are not declared in the user data schema.
+      unknownEventAttributes:
+        type: array
+        items:
+          type: string
+        description: |
+          Contains a list of event attributes that were included in the input event
+          but are not declared in the event data schema.
+      extraEventAttributes:
+        type: array
+        items:
+          type: string
+        description: |
+          Contains a list of event attributes that were included in the input event
+          but are not included in the declaration of this event type in the user data schema.
 
+
+  ConversionErrorType:
+    type: object
+    properties:
+      attribute:
+        type: string
+        description: The name of the affected attribute
+      expectedType:
+        type: string
+        description: The expected type for the attribute as declared in the event schema
+      actualType:       
+        type: string
+        description: The deduced type for the attribute as given in the input event
+
+  GetEventsResponse:
+    type: object
+    properties:
+      events:
+        type: array
+        items:
+          type: object
+        description: | 
+          A list of events that matched the input search criteria,each event is represented by a JSON object
+          whose schema is customer specific
+
+      request:
+        type: object
+        properties:
+          userId:
+            type: string
+            description: the identifier of the user for which the events were found
+          applicationId:
+            type: string
+            description: the identifier of the application in which the user belongs
+          eventType:
+            type: string
+            description: |
+              if a value is set, then only events of this type will be returned
+          startTime:
+            $ref: '#/definitions/ISODateTimeType'
+          endTime:
+            $ref: '#/definitions/ISODateTimeType'
+            
+        
 ##################################################################################
 #                       PARAMETERS
 ##################################################################################
@@ -3069,3 +3257,56 @@ parameters:
       enum: [HOURS,DAYS,WEEKS,MONTHS]
       description: |
         The time unit on which to aggregate the reported statistics.
+
+    getEventsUserIdFilter:
+      name: userId
+      in: query
+      required: true
+      type: string
+      description: the identifier of the user for which the events were found
+
+    getEventsAppIdFilter:
+      name: appId
+      in: query
+      required: true
+      type: string
+      description: the identifier of the application in which the user belongs
+
+    getEventsEventTypeFilter:
+      name: eventType
+      in: query
+      required: false
+      type: string
+      description: |
+       if a value is set, then only events of this type will be returned. 
+
+    getEventsStartTimeFilter:
+      name: startTime
+      in: query
+      required: false
+      type: string
+      description: |
+        Defines the start of the data range that must contain the creation date of each event. If not defined, the start time will be set to half an hour ago.
+
+    getEventsEndTimeFilter:
+      name: endTime
+      in: query
+      required: false
+      type: string
+      description: |
+        Defines the end of the data range that must contain the creation date of each event. If not defined it will default to one hour after the start time.
+
+    getEventsMaxResultsFilter:
+      name: maxResults
+      in: query
+      required: false
+      type: number
+      description: |
+        Limits the number of events that will be returned by this call. If not set it will default to 50.
+
+    getUserPropertiesUserIdParam:
+      name: userId
+      in: path
+      required: true
+      type: string
+      description: The identifier of the user whose properties should be returned

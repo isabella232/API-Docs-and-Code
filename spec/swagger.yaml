@@ -2128,6 +2128,9 @@ definitions:
         contactNumber:
           type: string
           description: The contact number for the user
+        testUserId:
+          type: string
+          description: Optional user ID to be used for testing
 
 
   UserAccountPasswordType:

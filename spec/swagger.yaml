@@ -1896,7 +1896,7 @@ definitions:
         description: |
           A human readable message containing more details about the error.
       innerErrors:
-        description: Details about what caused this error
+        description: Details about what caused this error. This is not used when error type is INCOMING_REFERENCE_ERROR
         type: array
         items: 
           type: object
@@ -1928,6 +1928,35 @@ definitions:
                 A more human readable message containing more details about the error. If we cannot extract the error
                 location in the 'errorPath' format, this message may contain some human readable location information.
 
+      incomingReferenceErrors:
+        description: Reference errors when error type is INCOMING_REFERENCE_ERROR
+        type: array
+        items: 
+          type: object
+          required:
+            - entityType
+            - url
+            - errorPath
+            - message
+          properties:
+            entityType:
+              type: string
+              description: The type of the refering entity
+              enum:
+                - WORKFLOW
+                - WORKFLOW_VERSION
+                - AB_TEST
+                - TRANSLATION_RESOURCE
+            url:
+              type: string
+              description: The URL of the refering entity
+            errorPath:
+              type: string
+              description: Path within the refering entity that contains the reference (not fully implemented)
+            message:
+              type: string
+              description: Descriptive message of the error
+
   ErrorTypeEnum:
     description: The top level type of the error. The type of errors continuously expands, so new enum values may be added often.
     type: string
@@ -1940,6 +1969,7 @@ definitions:
       - INVALID_REQUEST 
       - PERMISSION_DENIED
       - NAME_CONFLICT
+      - INCOMING_REFERENCE_ERROR
       
 
 

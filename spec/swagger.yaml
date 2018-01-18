@@ -1998,6 +1998,14 @@ definitions:
         type: string
         description: Link to last page
 
+  WorkflowExecutionMode:
+    type: string
+    description: Defines how the lifecycle of existing workflow instances will be affected by new executions of the workflow
+    enum:
+      - ONCE
+      - REPEATABLE
+      - MOST_RECENT
+
   WorkflowStatusType:
     type: string
     description: |
@@ -2545,6 +2553,8 @@ definitions:
                 "$ref": "#/definitions/IdType"
             status:
                 "$ref" : "#/definitions/WorkflowStatusType"
+            executionMode:
+                "$ref" : "#/definitions/WorkflowExecutionMode"
             steps:
               type: array
               description: |

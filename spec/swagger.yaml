@@ -1293,7 +1293,6 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
-
     post:
       summary: Creates a new AB test
       description: |
@@ -1366,7 +1365,36 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
-
+    put:
+      summary: Updates an ABTest
+      description: |
+        Updates an ABTest
+      tags:
+        - abtests
+      operationId: update
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/CreateABTestType'
+      responses:
+        200:
+          description: The AB test was updated successfully
+          schema:
+            $ref: '#/definitions/ABTestType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
 
 
 ##################################################################################
@@ -2410,18 +2438,18 @@ definitions:
   CreateABTestType:
     type: object
     description: |
-      AB test object
+      AB test object. The size sum of control group and the testGroups should be exactly 100
     required:
       - name
-      - application
       - testGroups
+      - controlGroupSize
     properties:
       name:
         "$ref" : "#/definitions/NameType"
       description:
         description: The user description for this AB test
         type: string
-      application:
+      applicationId:
         $ref: "#/definitions/IdType"
       seed:
         description: A seed for the AB test. AB tests with the same seeds and test sizes will result in groups with the exact same users.

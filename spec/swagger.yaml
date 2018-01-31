@@ -1757,7 +1757,37 @@ paths:
             $ref: '#/definitions/ErrorType'
 
   
+## Action preview Endpoint
 
+  /applications/{application}/preview_action:
+  
+    post:
+      summary: Executes the defined workflowstep with the specified user/event attributes
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - "$ref": "#/parameters/applicationParam"
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/PreviewRequestType'
+      responses:
+        200:
+          description: The action was executed correctly
+          schema:
+            $ref: '#/definitions/PreviewResultType'
+        500:
+          description: The action did not execute correctly
+          schema:
+            $ref: '#/definitions/ErrorType'
+        503:
+          description: The actions handler load balancer is unavailable
+      tags:
+        - workflows
+      
 
 ## Reporting Endpoints
 
@@ -2974,6 +3004,30 @@ definitions:
         $ref: '#/definitions/ISODateTimeType'
       aggregation:
         $ref: '#/definitions/TimeUnitType'
+
+  PreviewRequestType:
+    type: object
+    description: Details the action to be previewed
+    properties:
+      workflowStep:
+        type:
+        "$ref": "#/definitions/WorkflowStepTypeEnum"
+      userProperties:
+        type: object
+        description: A map of user properties to be used as user fields. If the action contains ${user.name}, should have an element with key 'name'
+      eventProperties:
+        type: object
+        description: A map of user properties to be used as event fields. If the action contains ${event.level}, should have an element with key 'level'
+
+  PreviewResultType:
+    type: object
+    description: Holds information about the result of executing an action
+    properties:
+      result:
+        type: string
+
+
+
 
   ISODateTimeType:
     description: |

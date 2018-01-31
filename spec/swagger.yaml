@@ -2414,7 +2414,7 @@ definitions:
           type: number
           format: int64
           description: End of night, defined a milliseconds since 12:00AM (e.g. 9AM is 32400000)
-          default: 79200000
+          default: 32400000
         nightDeliveryAllowed:
             type: boolean
             description: If set to false, no deliveries will be performed at night (defined by  nightTimeStartMillis and nightTimeEndMillis)

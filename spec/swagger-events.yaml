@@ -219,7 +219,8 @@ definitions:
         type: string
         description: |
           The timezone the user resides in. This must be provided to allow timezone sensitive operations such as avoiding nighttim delivery etc.
-          There multiple expected formats. Here are some examples:
+          There multiple expected formats recognized as listed below. The 'region/city' formats are preferable as they allow 
+          automatic adjustment during daylight saving periods. 
           * Z
           * +01
           * -01
@@ -229,8 +230,6 @@ definitions:
           * EST
           * Europe/Athens
           * Europe/London
-          The 'region/athens' formats are preferable as they allow automatic adjustment during daylight saving periods.
-        
         
       Version:
         type: string

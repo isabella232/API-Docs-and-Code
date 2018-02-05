@@ -49,7 +49,7 @@ info:
     For instance, getting the list of all available applications using curl:
     ```
     curl -X GET \
-    https://preprod.api.datatiger.com/applications \
+    https://staging.api.datatiger.com/applications \
     -H 'authorization: Bearer token_placeholder' 
     ```
     
@@ -68,7 +68,7 @@ info:
     Here is an simple authentication example with curl:
     ```
       curl -X POST \
-      https://preprod.api.datatiger.com/account/login \
+      https://staging.api.datatiger.com/account/login \
         -H 'content-type: application/x-www-form-urlencoded' \
         -d 'username=username_placeholder&password=password_placeholder'\
         -c cookieFile
@@ -78,7 +78,7 @@ info:
     applications):
     ```
       curl -X GET \
-      https://preprod.api.datatiger.com/applications \
+      https://staging.api.datatiger.com/applications \
       -b cookieFile
     ```
     
@@ -2417,7 +2417,7 @@ definitions:
           default: 32400000
         nightDeliveryAllowed:
             type: boolean
-            description: If set to false, no deliveries will be performed at night (defined by  nightTimeStartMillis and nightTimeEndMillis)
+            description: If set to false, no deliveries will be performed at night (defined by  nightTimeStartMillis and nightTimeEndMillis).
             default: false
   ApplicationType:
     description: Fully populated application information

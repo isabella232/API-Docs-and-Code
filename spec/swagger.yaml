@@ -1783,6 +1783,10 @@ paths:
           description: The action did not execute correctly
           schema:
             $ref: '#/definitions/ErrorType'
+        400:
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/ErrorType'
         503:
           description: The actions handler load balancer is unavailable
       tags:
@@ -3011,7 +3015,7 @@ definitions:
     properties:
       workflowStep:
         type:
-        "$ref": "#/definitions/WorkflowStepTypeEnum"
+        "$ref": "#/definitions/WorkflowStepType"
       userProperties:
         type: object
         description: A map of user properties to be used as user fields. If the action contains ${user.name}, should have an element with key 'name'

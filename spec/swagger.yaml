@@ -2670,16 +2670,14 @@ definitions:
             "$ref": "#/definitions/WorkflowStepNameType"
 
   ActionStepType:
-    allOf:
-      - $ref : '#/definitions/WorkflowStepType'
-      - type: object
-        properties:
-          nightDeliveryAllowed:
-            type: boolean
-            description: | 
-              If false, action executions during the night (according to the application settings and the user timezone) are delayed until
-              the beginning of the day (the action will be executed during a one hour window after the beginning of the day). The value defaults
-              to the one at the application settings at the time of the workflow creation. 
+    type: object
+    properties:
+      nightDeliveryAllowed:
+        type: boolean
+        description: | 
+          If false, action executions during the night (according to the application settings and the user timezone) are delayed until
+          the beginning of the day (the action will be executed during a one hour window after the beginning of the day). The value defaults
+          to the one at the application settings at the time of the workflow creation. 
 
   #This has to be exactly the same as the value of the WorkflowStepType
   START:
@@ -2691,6 +2689,7 @@ definitions:
     description: |
       An action performing workflow step. The extra parameters customize the action.
     allOf:
+      - $ref : '#/definitions/WorkflowStepType'
       - $ref : '#/definitions/ActionStepType'
       - type: object
         properties:
@@ -2722,6 +2721,7 @@ definitions:
       An action for sending Push notifications using Amazon SNS. At least one of the androidRegistrationId or iosDeviceToken must be specified. Ideally both should be provided to allow 
       sending push notifications to both IOS and Android users.
     allOf:
+      - $ref : '#/definitions/WorkflowStepType'
       - $ref : '#/definitions/ActionStepType'
       - type: object
         properties:
@@ -2742,6 +2742,7 @@ definitions:
     description: |
       An action for sending an e-mail through SendGrid
     allOf:
+      - $ref : '#/definitions/WorkflowStepType'
       - $ref : '#/definitions/ActionStepType'
       - type: object
         properties:
@@ -2793,6 +2794,7 @@ definitions:
   MANDRILL_EMAIL_ACTION:
     description: An action for sending emails through Mandrill
     allOf:
+      - $ref : '#/definitions/WorkflowStepType'
       - $ref : '#/definitions/ActionStepType'
       - type: object
         properties:
@@ -2838,6 +2840,7 @@ definitions:
   ADWORDS_REMARKETING_ACTION:
     description: An action that adds the user to a Google Adwords remarketing user list.
     allOf:
+      - $ref : '#/definitions/WorkflowStepType'
       - $ref: '#/definitions/ActionStepType'
       - type: object
         properties:
@@ -2879,6 +2882,7 @@ definitions:
   SNS_SMS:
     description: Sends a SMS through Amazon's SNS service
     allOf:
+      - $ref : '#/definitions/WorkflowStepType'
       - $ref : '#/definitions/ActionStepType'
       - type: object
         properties:

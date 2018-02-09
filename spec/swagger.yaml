@@ -2068,6 +2068,18 @@ definitions:
       - REPEATABLE
       - MOST_RECENT
 
+  WorkflowControlGroupSize:
+    type: number
+    format: int32
+    description: Percentage of the population that should belong to the workflow version control group.
+    
+  WorkflowControlGroupSeed:
+    type: string
+    description: |
+      A seed for the workflow version control group. Control groups with the same seeds and test sizes will result in groups with the exact same users.
+      To share the same control group populations across different vesions of a workflow, all versions must share the same seed value.
+    
+
   WorkflowStatusType:
     type: string
     description: |
@@ -2629,6 +2641,11 @@ definitions:
                 "$ref" : "#/definitions/WorkflowStatusType"
             executionMode:
                 "$ref" : "#/definitions/WorkflowExecutionMode"
+            workflowControlGroupSize:
+                "$ref" : "#/definitions/WorkflowControlGroupSize"
+            workflowControlGroupSeed:
+                "$ref" : "#/definitions/WorkflowControlGroupSeed"
+                
             steps:
               type: array
               description: |

@@ -722,7 +722,7 @@ paths:
     post:
       summary: Creates a new user account
       description: |
-        Creates a new user account, under the same client account that the current user belongs. 
+        Creates a new user account, under the same client account that the current user belongs. Only users with appropriate permissions can create new user accounts. 
       tags:
         - users
       operationId: createUserAccount
@@ -750,6 +750,10 @@ paths:
           description: Malformed request
           schema:
             $ref: '#/definitions/ErrorType'
+        403:
+          description: User is not allowed to create a new user account.
+          schema:
+            $ref: '#/definitions/ErrorType'
         409:
           description: Conflict
           schema:
@@ -769,7 +773,7 @@ paths:
     put:
       summary: Updates an user account
       description: |
-        Updates the information of an existing user account.
+        Updates the information of an existing user account. Users can modify their own properties. Only users with the appropriate permissions can modify other users' properties. 
       tags:
         - users
       operationId: updateUserAccount
@@ -792,12 +796,16 @@ paths:
           description: Malformed request
           schema:
             $ref: '#/definitions/ErrorType'
+        403:
+          description: User does not have permission to update the target user account.
+          schema:
+            $ref: '#/definitions/ErrorType'
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorType'
     delete:
-      summary: Deletes a user account
+      summary: Deletes a user account. Only users with adequate permissions can delete user accounts.
       description: |
         Deletes a user account
       tags:
@@ -856,6 +864,57 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
+  /useraccounts/{useraccountid}/credentials:
+    parameters:
+        - "$ref": "#/parameters/useraccountparam"
+        - "$ref": "#/parameters/authParam"
+    post:
+
+      summary: Update the security credentials of a user account
+      description: Update the security credentials of a user account
+       
+      tags:
+        - users
+      operationId: updateUserCredentials
+      parameters:
+        - 
+          name: oldPassword
+          description: The current password of the user. It must match the existing password of the user.
+          in: formData
+          required: true
+          type: string
+        - 
+          name: newPassword
+          description: The new user password. It must be 8 characters or more. 
+          in: formData
+          required: true
+          type: string
+            
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The user account
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        403:
+          description: User does not have permission to update the target user account credentials, or the old password is wrong.
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The user account with the specified identifier does not exist.
+          schema:
+            $ref: '#/definitions/ErrorType'
+        500:
+          description: The update failed due to internal server error
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
 
 ##################################################################################
 #                      Application APIs
@@ -2348,23 +2407,13 @@ definitions:
           description: Optional user ID to be used for testing
 
 
-  UserAccountPasswordType:
-    type: object
-    properties:
-        password:
-          type: string
-          description: The password of the user account
-
-
   ReturnedUserAccountType:
     description: Information that is only returned but never provided
     type: object
-    required:
-      - apikey
     properties:
       apikey:
           type: string
-          description: The API key associated with this user
+          description: The API key associated with this user. Currently API key is only returned when for the currently logged in user account.
       lastlogin:
           $ref: '#/definitions/ISODateTimeType' 
       lastip:
@@ -2381,7 +2430,6 @@ definitions:
       - password
     allOf:
       - $ref: '#/definitions/CoreUserAccountType'
-      - $ref: '#/definitions/UserAccountPasswordType'
 
  
   UpdateUserAccountType:
@@ -2389,7 +2437,6 @@ definitions:
     allOf:
       - $ref: '#/definitions/CoreUserAccountType'
       - $ref: '#/definitions/ObjectWithIdType'
-      - $ref: '#/definitions/UserAccountPasswordType'
 
 
   UserAccountType:

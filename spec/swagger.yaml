@@ -3070,7 +3070,7 @@ definitions:
   
   MultiNDayAnalyticsMetricReport:
     type: object
-    description: Metric values per n day (e.g. 2-day retention, 7 day-retention and so on)
+    description: Metric values per n day (e.g. 2-day retention, 7-day retention and so on)
     required:
       - "2"
     properties:
@@ -3086,7 +3086,7 @@ definitions:
     
   NDayAnalyticsMetricReport:
     type: object
-    description: asdfas
+    description: Metric values of a specific start/ending measurement period
     properties:
       day:
         description: The number of days that separate the start/ending measurements (e.g. 7 for 7 day retention)

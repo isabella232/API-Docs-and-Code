@@ -1885,6 +1885,35 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
+
+  /applications/{application}/workflows/{workflow}/versions/{version}/analytics:
+
+    get:
+      summary: Returns uplift analytics for the workflow version, using the most recent sample of data.
+      description: |
+        Returns uplift analytics for the workflow version
+      tags:
+        - reporting
+
+      operationId: reportWorkflowAnalytics
+      parameters:
+        - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/workflowParam"
+        - "$ref": "#/parameters/versionParam"
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Most recent workflow version analytics.
+          schema:
+            $ref: '#/definitions/AnalyticsReportingResponseType'
+        404:
+          description: The reference workflow/version could not be found.
+          schema:
+            $ref: '#/definitions/ErrorType'
+
 ## Steptpyes
 
   /stepdata/adwords/userlists:
@@ -2427,7 +2456,6 @@ definitions:
     required:
       - username
       - email
-      - password
     allOf:
       - $ref: '#/definitions/CoreUserAccountType'
 
@@ -3016,7 +3044,67 @@ definitions:
         required:
           - abTestId
 
+  AnalyticsReportingResponseType:
+    type: object
+    description: Contains the supported analytics metrics.
+    properties:
+      RETENTION:
+        "$ref": "#/definitions/AnalyticsMetricReport"
 
+  AnalyticsMetricReport:
+    type: object
+    description: Contains the values for a specific metric.
+    required:
+      - type
+      - referenceDate
+    properties:
+      type:
+        $ref: '#/definitions/AnalyticsTypeEnum'
+      referenceDate:
+        type: string
+        description: |
+          Metrics reference date formated as 'yyyy-MM-dd'. E.g. if the date is '2018-02-10', the 7 day retention metric compares users entering the workflow in '2018-02-04' and being 
+          active on '2018-02-10'
+      nDayAnalytics:
+        "$ref": "#/definitions/MultiNDayAnalyticsMetricReport"
+  
+  MultiNDayAnalyticsMetricReport:
+    type: object
+    description: Metric values per n day (e.g. 2-day retention, 7 day-retention and so on)
+    required:
+      - "2"
+    properties:
+      2:
+        $ref: '#/definitions/NDayAnalyticsMetricReport'
+      7:
+        $ref: '#/definitions/NDayAnalyticsMetricReport'
+      14:
+        $ref: '#/definitions/NDayAnalyticsMetricReport'
+      30:
+        $ref: '#/definitions/NDayAnalyticsMetricReport'
+    
+    
+  NDayAnalyticsMetricReport:
+    type: object
+    description: asdfas
+    properties:
+      day:
+        description: The number of days that separate the start/ending measurements (e.g. 7 for 7 day retention)
+        type: number
+      ratio:
+        description: |
+          Ending measurement divided by starting mesurements. E.g. for 7 day retention it's the number of user that remain active in the 7th day
+          divided by the number of uses that entered the workflow
+        type: number
+      uplift:
+        description: It is the ratio minus the ratio of the workflow version control group. 
+        type: number
+    
+  AnalyticsTypeEnum:
+    description: Type of analytics metrics
+    type: string
+    enum: [RETENTION]
+    
   ReportingResponseType:
     type: object
     properties:
@@ -3094,7 +3182,6 @@ definitions:
     description: Details the action to be previewed
     properties:
       workflowStep:
-        type:
         "$ref": "#/definitions/WorkflowStepType"
       userProperties:
         type: object

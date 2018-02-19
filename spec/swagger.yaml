@@ -3056,11 +3056,11 @@ definitions:
     description: Contains the values for a specific metric.
     required:
       - type
-      - referenceDate
+      - metricDate
     properties:
       type:
         $ref: '#/definitions/AnalyticsTypeEnum'
-      referenceDate:
+      metricDate:
         type: string
         description: |
           Metrics reference date formated as 'yyyy-MM-dd'. E.g. if the date is '2018-02-10', the 7 day retention metric compares users entering the workflow in '2018-02-04' and being 

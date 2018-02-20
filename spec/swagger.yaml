@@ -536,21 +536,13 @@ paths:
       produces:
         - text/plain
       consumes:
-        - application/x-www-form-urlencoded
+        - application/json
       parameters:
-        - 
-          in: formData
-          name: username
-          type: string
-          description: The user's username
+        - name: body
+          in: body
           required: true
-        - 
-          in: formData
-          name: password
-          type: string
-          description: The user's password
-          required: true
-        
+          schema:
+            "$ref": '#/definitions/LoginRequestType'
       responses:
         200:
           description:  Authentication was successful. 
@@ -877,19 +869,11 @@ paths:
         - users
       operationId: updateUserCredentials
       parameters:
-        - 
-          name: oldPassword
-          description: The current password of the user. It must match the existing password of the user.
-          in: formData
+        - name: body
+          in: body
           required: true
-          type: string
-        - 
-          name: newPassword
-          description: The new user password. It must be 8 characters or more. 
-          in: formData
-          required: true
-          type: string
-            
+          schema:
+            "$ref": '#/definitions/ChangePasswordRequestType'
       produces:
         - application/json
       responses:
@@ -2408,7 +2392,33 @@ definitions:
       - $ref: '#/definitions/ClientAccountCreationType'
       - $ref: '#/definitions/ObjectWithIdType'
 
-
+### Auth types
+  LoginRequestType:
+    type: object
+    description: User login credentials
+    required:
+      - username
+      - password
+    properties:
+      username:
+        type: string
+        description: the username associated with the user's account
+      password:
+        type: string
+        description: the password associated with the username.
+  ChangePasswordRequestType:
+    type: object
+    description: User login credentials
+    required:
+      - oldPassword
+      - newPassword
+    properties:
+      oldPassword:
+        type: string
+        description: The current (old) password of the user
+      newPassword:
+        type: string
+        description: The new password of the user. It must be longer than 8 characters.
 
 
 ### User account types

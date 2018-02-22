@@ -1440,6 +1440,50 @@ paths:
             $ref: '#/definitions/ErrorType'
 
 
+
+##################################################################################
+#                       Push templates
+##################################################################################
+  /applications/{application}/pushTemplates:
+    parameters:
+      - "$ref": "#/parameters/applicationParam"
+      - "$ref": "#/parameters/authParam"
+
+    get:
+      summary: Lists all push templates of an application
+      description: |
+        Lists all push templates of an application
+      tags:
+        - settings
+
+      operationId: getPushTempaltesOfApplication
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The set of available push templates of this application.
+          schema:
+              type: object
+              properties:
+                paging:
+                  $ref: '#/definitions/PagingType'
+                items:
+                  description: Array of the push notificatins
+                  type: array
+                  items:
+                    "$ref": '#/definitions/PushTemplateType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+
 ##################################################################################
 #                       Workflow APIs
 ##################################################################################
@@ -2485,7 +2529,51 @@ definitions:
       - $ref: '#/definitions/ReturnedUserAccountType'
 
 
-
+###Push template type
+  PushTemplateTypeDerievedProperties:
+    type: object
+    properties:
+      requiresMessage:
+        type: boolean
+        description: True if this tempalte requires message to be set in the SNS Push action.
+      requiresTitle:
+        type: boolean
+        description: True if this tempalte requires the title to be set in the SNS Push action.
+      requiresImage:
+        type: boolean
+        description: True if this tempalte requires the image to be set in the SNS Push action.
+      requiresVideo:
+        type: boolean
+        description: True if this tempalte requires the video to be set in the SNS Push action.
+  CreatePushTemplateType:
+    type: object
+    description: Fully populated push template
+    properties:
+      name:
+        type: string
+        description: The name of the tempalte
+      applicationId:
+        type: number
+        description: the accociated application
+      platform:
+        type: string
+        description: The platform to which this template applies
+        enum:
+          - IOS
+          - ANDROID
+      definition:
+        type: string
+        description: |
+          The JSON that will be sent to SNS. The special strings ${action.snspush.message}, ${action.snspush.title}, ${action.snspush.image} and ${action.snspush.video}
+          will be replaced with the relevant values from the SNS Push action definition (and if used in the template they will be required
+          to not be null. As an example, the defauilt template is:        
+          '{ "default": "${action.snspush.message}", "APNS": "{\\"aps\\":{\\"alert\\": \"${action.snspush.message}\\"} }", "GCM":"{\\"data\\":{\\"message\\": \\"${action.snspush.message}\\"}}"}' 
+      
+  PushTemplateType:
+    allOf:
+      - $ref: '#/definitions/PushTemplateTypeDerievedProperties'
+      - $ref: '#/definitions/CreatePushTemplateType'
+      - $ref: '#/definitions/ObjectWithIdType'
 
 
 ### Application  types

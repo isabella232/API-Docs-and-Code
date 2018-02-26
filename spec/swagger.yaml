@@ -1473,7 +1473,7 @@ paths:
                   description: Array of the push notificatins
                   type: array
                   items:
-                    "$ref": '#/definitions/PushTemplateType'
+                    "$ref": '#/definitions/CreatePushTemplateType'
         400:
           description: Malformed request
           schema:

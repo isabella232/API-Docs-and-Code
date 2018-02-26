@@ -1469,11 +1469,11 @@ paths:
               properties:
                 paging:
                   $ref: '#/definitions/PagingType'
-                itemss:
-                  description: Array of the push notificatins
+                items:
+                  description: An array of the test groups for this AB test
                   type: array
                   items:
-                    "$ref": '#/definitions/PushTemplateType'
+                    "$ref" : "#/definitions/TestGroupType"
 
 
 

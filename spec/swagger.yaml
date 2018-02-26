@@ -1470,7 +1470,7 @@ paths:
                 paging:
                   $ref: '#/definitions/PagingType'
                 items:
-                  description: Array of the push notificatins
+                  description: Array of the push notification templates
                   type: array
                   items:
                     "$ref": '#/definitions/PushTemplateType'
@@ -2910,24 +2910,49 @@ definitions:
   
   SNS_PUSH_ACTION:
     description: |
-      An action for sending Push notifications using Amazon SNS. At least one of the androidRegistrationId or iosDeviceToken must be specified. Ideally both should be provided to allow 
-      sending push notifications to both IOS and Android users.
+      An action for sending Push notifications using Amazon SNS. At least one of the androidTemplateId or the iosTemplateId must be defined. If a template is defined, then the corresponding
+      token and message must also be provided as well as all other fields that are required by the template. 
     allOf:
       - $ref : '#/definitions/WorkflowStepType'
       - $ref : '#/definitions/ActionStepType'
       - type: object
         properties:
-          message:
-            type: string
-            description: The message in the notification body
           androidRegistrationId:
             type: string
             description: The GCM registration id for the user. This will normally be filled with an expression pointint to a user property that contains the registration id.
           iosDeviceToken:
             type: string
             description: The IOS device token for the user. This will normally be filled with an expression pointing to a user property that contains the device token.
-        required:
-          - message
+          androidTemplateId:
+            type: string
+            description: The SNS Push template to be used for android pushes
+          androidTitle:
+            type: string
+            description: The title of the android message 
+          androidMessage:
+            type: string
+            description:  The body of the android message
+          androidImageURL:
+            type: string
+            description: The URL of the android message image
+          androidVideoURL:
+            type: string
+            description: The URL of the andoir message video 
+          iosTemplateId:
+            type: string
+            description:  The SNS Push template to be used for IOS pushes
+          iosTitle:
+            type: string
+            description: The title of the IOS message
+          iosMessage:
+            type: string
+            description: The body of the IOS message 
+          iosImageURL:
+            type: string
+            description: The URL of the IOS message image
+          iosVideoURL:           
+            type: string
+            description: The URL of the IOS message video
   
   
   SENDGRID_EMAIL_ACTION:

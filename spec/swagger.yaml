@@ -1469,11 +1469,15 @@ paths:
               properties:
                 paging:
                   $ref: '#/definitions/PagingType'
-                items:
+                itemss:
                   description: Array of the push notificatins
                   type: array
                   items:
-                    "$ref": '#/definitions/CreatePushTemplateType'
+                    "$ref": '#/definitions/PushTemplateType'
+
+
+
+
         400:
           description: Malformed request
           schema:
@@ -2566,7 +2570,7 @@ definitions:
         description: |
           The JSON that will be sent to SNS. The special strings ${action.snspush.message}, ${action.snspush.title}, ${action.snspush.image} and ${action.snspush.video}
           will be replaced with the relevant values from the SNS Push action definition (and if used in the template they will be required
-          to not be null. As an example, the defauilt template is:        S
+          to not be null. As an example, the defauilt template is:        
           '{ "default": "${action.snspush.message}", "APNS": "{\\"aps\\":{\\"alert\\": \"${action.snspush.message}\\"} }", "GCM":"{\\"data\\":{\\"message\\": \\"${action.snspush.message}\\"}}"}' 
       
   PushTemplateType:

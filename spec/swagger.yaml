@@ -1470,14 +1470,10 @@ paths:
                 paging:
                   $ref: '#/definitions/PagingType'
                 items:
-                  description: An array of the test groups for this AB test
+                  description: Array of the push notificatins
                   type: array
                   items:
-                    "$ref" : "#/definitions/TestGroupType"
-
-
-
-
+                    "$ref": '#/definitions/PushTemplateType'
         400:
           description: Malformed request
           schema:
@@ -2575,7 +2571,7 @@ definitions:
       
   PushTemplateType:
     type: object
-    description: Fully populated push template 
+    description: Fully populated push temp
     allOf:
       - $ref: '#/definitions/PushTemplateTypeDerievedProperties'
       - $ref: '#/definitions/CreatePushTemplateType'

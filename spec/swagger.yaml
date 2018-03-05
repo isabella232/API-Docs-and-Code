@@ -666,7 +666,7 @@ paths:
     parameters:
       - "$ref": "#/parameters/authParam"
 
-###Get applications 
+###Get UserAccounts
     get:
 
       summary: Get users of the client account.  
@@ -701,7 +701,7 @@ paths:
                   description: Array of the returned applications
                   type: array
                   items:
-                    "$ref": '#/definitions/ApplicationType'
+                    "$ref": '#/definitions/UserAccountType'
         400:
           description: Malformed request
           schema:

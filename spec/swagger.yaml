@@ -606,12 +606,12 @@ paths:
           in: body
           required: true
           schema:
-            "$ref": '#/definitions/ClientAccountType'
+            "$ref": '#/definitions/ClientAccountTypeForUpdate'
       responses:
         200:
           description: The client account was updated successfully
           schema:
-            $ref: '#/definitions/ClientAccountType'
+            $ref: '#/definitions/ClientAccountTypePopulated'
         400:
           description: Malformed request
           schema:
@@ -637,7 +637,7 @@ paths:
         200:
           description: The client account
           schema:
-             "$ref": '#/definitions/ClientAccountType'
+             "$ref": '#/definitions/ClientAccountTypePopulated'
         400:
           description: Malformed request
           schema:
@@ -2390,13 +2390,27 @@ definitions:
     type: string
 
 ### Client account types
-
-  ClientAccountCreationType:
+  ClientAccountReturnProperties:
+        type: object
+        description: Extra return properties for the client account  
+        required:
+          - awsSecretValueInfo
+          - awsAccessKeyValueInfo
+          - mandrillApiKeyValueInfo
+          - sendgridApiKeyValueInfo
+        properties:
+          awsSecretValueInfo:
+            $ref: '#/definitions/SecretValueType'
+          awsAccessKeyValueInfo:
+            $ref: '#/definitions/SecretValueType'
+          mandrillApiKeyValueInfo:
+            $ref: '#/definitions/SecretValueType'
+          sendgridApiKeyValueInfo:
+            $ref: '#/definitions/SecretValueType'
+ 
+  ClientAccountPopulationProperties:
         type: object
         description: A client (data tiger customer)  entry that stores the client specific settings.  
-        required:
-          - name
-          - email
         properties:
           name:
             type: string
@@ -2430,11 +2444,31 @@ definitions:
               AWS region that corresponds to the AWS key of the client's account. This is used by any actions that require to the client's
               customer's account (e.g. SNS Push action)
 
-  ClientAccountType:
-    description:  A client (data tiger customer)  entry that stores the client specific settings.  
+
+
+  ClientAccountTypePopulated:
+    description:  A client (data tiger customer)  entry that stores the client specific settings.
+    required:
+      - name
+      - email
     allOf:
-      - $ref: '#/definitions/ClientAccountCreationType'
+      - $ref: '#/definitions/ClientAccountReturnProperties'
+      - $ref: '#/definitions/ClientAccountPopulationProperties'
       - $ref: '#/definitions/ObjectWithIdType'
+
+  ClientAccountTypeForUpdate:
+    description:  A client (data tiger customer)  entry that stores the client specific settings.
+    allOf:
+      - $ref: '#/definitions/ClientAccountPopulationProperties'
+      - $ref: '#/definitions/ObjectWithIdType'
+
+  ClientAccountTypeForCreation:
+    description:  A client (data tiger customer)  entry that stores the client specific settings.
+    required:
+      - name
+      - email
+    allOf:
+      - $ref: '#/definitions/ClientAccountPopulationProperties'
 
 ### Auth types
   LoginRequestType:
@@ -2567,7 +2601,7 @@ definitions:
           The JSON that will be sent to SNS. The special strings ${action.snspush.message}, ${action.snspush.title}, ${action.snspush.image} and ${action.snspush.video}
           will be replaced with the relevant values from the SNS Push action definition (and if used in the template they will be required
           to not be null. As an example, the defauilt template is:        
-          '{ "default": "${action.snspush.message}", "APNS": "{\\"aps\\":{\\"alert\\": \"${action.snspush.message}\\"} }", "GCM":"{\\"data\\":{\\"message\\": \\"${action.snspush.message}\\"}}"}' 
+          { "default": "${action.snspush.message}", "APNS": "{\\"aps\\":{\\"alert\\": \"${action.snspush.message}\\"} }", "GCM":"{\\"data\\":{\\"message\\": \\"${action.snspush.message}\\"}}"} 
       
   PushTemplateType:
     allOf:
@@ -3296,6 +3330,15 @@ definitions:
         type: string
 
 
+  SecretValueType:
+    description: |
+     Type of sensitive information value when returning results. 
+     EMPTY: The value is not populated. 
+     POPULATED: The value is populated but it is not returned
+     POPULATED_PREFIX: The value is populated and a sample prefix is returned     
+     POPULATED_SUFFIX: The value is populated and a sample suffix is returned     
+    type: string
+    enum: [EMPTY,POPULATED,POPULATED_PREFIX,POPULATED_SUFFIX]
 
 
   ISODateTimeType:

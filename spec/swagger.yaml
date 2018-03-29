@@ -2003,7 +2003,9 @@ paths:
     get:
       summary: Returns all the languages available 
       description: |
-        Returns all the languages available for the specified translation resource.
+        Returns all the languages available for the specified translation resource. If the resource contains no languages, 
+        an empty list will be returned. This can be in the case where a spreadsheet is used for randomization/action population
+        but no translation.
       tags:
         - translations  
       parameters:
@@ -2016,7 +2018,8 @@ paths:
     get:
       summary: Returns all the keys available
       description: |
-        Returns all the translation keys from the translation resource specified.
+        Returns all the translation keys from the translation resource specified. It will not return keys that are used for multi-content 
+        (keys that have associated variations or action parameters)
       tags:
         - translations
       parameters:
@@ -2026,6 +2029,41 @@ paths:
           description: The response will be a list of Strings each one being a translation key 
 
 
+  /translations/{translationId}/multiKeys:
+    get:
+      summary: Returns information on all multi content keys of the translation resource.
+      description: |
+        Returns all the multi content translation keys from the translation resource specified. It will not return keys that do not
+        have associated variations or action parameters. 
+      tags:
+        - translations
+      parameters:
+        - "$ref" : "#/parameters/translationParam"
+      responses: 
+        200:
+          description: Information on all available keys
+          schema:
+            type: array
+            items:
+              "$ref": '#/definitions/MulticopyKeyInfoRepresentation'
+
+  /translations/{translationId}/multiKeys/{multiKeyId}:
+    get:
+      summary: Returns the copy information associated with the multi key
+      description: |
+        Returns the copy information associated with the multi key. The structure is always the same, independently of whether there
+        are random variations, action parameters or languages. In such cases the maps key uses a default value: 'default' for languages 
+        and random variations and "NO_PARAMETER" for action parameters
+      tags:
+        - translations
+      parameters:
+        - "$ref" : "#/parameters/translationParam"
+        - "$ref" : "#/parameters/multiKeyParam"
+      responses: 
+        200:
+          description: Information on all available keys
+          schema:
+            "$ref": '#/definitions/MulticopyKeyContentRepresentation'
 ##################################################################################
 #                       Definitions of type
 ##################################################################################
@@ -2037,6 +2075,7 @@ definitions:
 
   NameType:
     type: string
+    
     description: The unique name of the entity
 
   IdType:
@@ -2696,7 +2735,94 @@ definitions:
       - $ref: '#/definitions/ObjectWithIdType'
 
 
+  MulticopyKeyInfoRepresentation:
+    type: object
+    description: Multi key  metainformation. One or more of the following lists (languages, variations, actionParameters) will have >0 elements.
+    required:
+      - key
+      - languages
+      - variations
+      - actionParameters
+    properties:
+        key:
+          type: string
+          description: The key
+        languages:
+          type: array
+          items:
+            type: string
+          description: The list of available languages. If the key has no language mappings and empty list will be returned 
+        variations:
+          type: array
+          items:
+            type: string
+          description: The list of random variations. These are labeled according to the suffixes in the document. If no variations exist for this key an empty list will be returned.  
+        actionParameters:
+          type: array
+          description: The list of parameter types defined by this key. If the key has no associated action parameters an empty list will be returned 
+          items:
+            "$ref": '#/definitions/ActionParameterTypeEnum'
 
+  ActionParameterTypeEnum:
+    type: string
+    description: |
+      Represents a parameter of an action. At the moment it only covers SNS push action parameters. NO_PARAMETER is used when 
+      an action parameter type is required, but none is available   
+    enum:
+      - NO_PARAMETER
+      - ANDROID_TITLE
+      - ANDROID_MESSAGE
+      - ANDROID_IMAGE
+      - ANDROID_VIDEO
+      - IOS_TITLE
+      - IOS_MESSAGE
+      - IOS_IMAGE
+      - IOS_VIDEO
+
+
+  MulticopyKeyContentRepresentation:
+    type: object
+    description: Copies associated with the multi key
+    required:
+      - key
+      - content
+    properties:
+        key:
+          type: string
+          description: The key
+        content:
+          type: object
+          description: Map from the language (or 'default' if no language variations exist) to the per-variation content map
+          properties:
+            language:
+              "$ref": "#/definitions/MulticopyKeyContentPerVariation"
+            additionalProperties:
+              "$ref": "#/definitions/MulticopyKeyContentPerVariation"
+
+  MulticopyKeyContentPerVariation:
+    type: object
+    description: Copies per variation. If there is no random variations, 'default' string is used as the map key.
+    required:
+      - variation
+    properties:
+      variation:
+        "$ref": "#/definitions/MulticopyKeyContentPerAction"
+      additionalProperties:
+        "$ref": "#/definitions/MulticopyKeyContentPerAction"
+
+
+  MulticopyKeyContentPerAction:
+    type: object
+    description: Copy per action parameter. If no parameter is specified then 'NO_PARAMETER' will be used as the array key.
+    required:
+      - parameter
+    properties:
+      parameter:
+        type: string
+      additionalProperties:
+        type: string
+
+    
 ####ABTest types
 
   ABTestRefType:
@@ -3510,7 +3636,13 @@ parameters:
         required: true
         type: string
         description: The identifier of the translation key id
-
+    multiKeyParam:
+        name: multiKeyId
+        in: path
+        required: true
+        type: string
+        description: The identifier of the multi key
+    
     workflowParam:
         name: workflow
         in: path

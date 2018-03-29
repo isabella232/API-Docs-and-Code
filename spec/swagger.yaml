@@ -2796,7 +2796,7 @@ definitions:
           properties:
             language:
               "$ref": "#/definitions/MulticopyKeyContentPerVariation"
-            additionalProperties:
+          additionalProperties:
               "$ref": "#/definitions/MulticopyKeyContentPerVariation"
 
   MulticopyKeyContentPerVariation:
@@ -2807,7 +2807,7 @@ definitions:
     properties:
       variation:
         "$ref": "#/definitions/MulticopyKeyContentPerAction"
-      additionalProperties:
+    additionalProperties:
         "$ref": "#/definitions/MulticopyKeyContentPerAction"
 
 
@@ -2819,7 +2819,7 @@ definitions:
     properties:
       parameter:
         type: string
-      additionalProperties:
+    additionalProperties:
         type: string
 
     

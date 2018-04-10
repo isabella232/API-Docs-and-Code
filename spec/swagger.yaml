@@ -2034,49 +2034,6 @@ paths:
 
 ## Translations Info
 
-  /translations/{translationId}/keys/{translationKeyId}:
-    get:
-      summary: Returns all the translations.
-      description: |
-        Returns all the translations from the translation key located in the translation resource specified.
-      tags:
-        - translations
-      parameters:
-        - "$ref" : "#/parameters/translationParam"
-        - "$ref" : "#/parameters/translationKeyParam"
-      responses: 
-        200:
-          description: The response will contain a map language -> content
-
-  /translations/{translationId}/languages:
-    get:
-      summary: Returns all the languages available 
-      description: |
-        Returns all the languages available for the specified translation resource. If the resource contains no languages, 
-        an empty list will be returned. This can be in the case where a spreadsheet is used for randomization/action population
-        but no translation.
-      tags:
-        - translations  
-      parameters:
-        - "$ref" : "#/parameters/translationParam"
-      responses: 
-        200:
-          description: The response will be a list of Strings each one being a language available
-
-  /translations/{translationId}/keys:
-    get:
-      summary: Returns all the keys available
-      description: |
-        Returns all the translation keys from the translation resource specified. It will not return keys that are used for multi-content 
-        (keys that have associated variations or action parameters)
-      tags:
-        - translations
-      parameters:
-        - "$ref" : "#/parameters/translationParam"
-      responses: 
-        200:
-          description: The response will be a list of Strings each one being a translation key 
-
 
   /translations/{translationId}/multiKeys:
     get:

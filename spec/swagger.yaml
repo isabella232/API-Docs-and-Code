@@ -655,12 +655,12 @@ paths:
           in: body
           required: true
           schema:
-            "$ref": '#/definitions/ClientAccountType'
+            "$ref": '#/definitions/ClientAccountTypeForUpdate'
       responses:
         200:
           description: The client account was updated successfully
           schema:
-            $ref: '#/definitions/ClientAccountType'
+            $ref: '#/definitions/ClientAccountTypePopulated'
         400:
           description: Malformed request
           schema:
@@ -686,7 +686,7 @@ paths:
         200:
           description: The client account
           schema:
-             "$ref": '#/definitions/ClientAccountType'
+             "$ref": '#/definitions/ClientAccountTypePopulated'
         400:
           description: Malformed request
           schema:
@@ -715,7 +715,7 @@ paths:
     parameters:
       - "$ref": "#/parameters/authParam"
 
-###Get applications 
+###Get UserAccounts
     get:
 
       summary: Get users of the client account.  
@@ -750,7 +750,7 @@ paths:
                   description: Array of the returned applications
                   type: array
                   items:
-                    "$ref": '#/definitions/ApplicationType'
+                    "$ref": '#/definitions/UserAccountType'
         400:
           description: Malformed request
           schema:
@@ -2052,7 +2052,9 @@ paths:
     get:
       summary: Returns all the languages available 
       description: |
-        Returns all the languages available for the specified translation resource.
+        Returns all the languages available for the specified translation resource. If the resource contains no languages, 
+        an empty list will be returned. This can be in the case where a spreadsheet is used for randomization/action population
+        but no translation.
       tags:
         - translations  
       parameters:
@@ -2065,7 +2067,8 @@ paths:
     get:
       summary: Returns all the keys available
       description: |
-        Returns all the translation keys from the translation resource specified.
+        Returns all the translation keys from the translation resource specified. It will not return keys that are used for multi-content 
+        (keys that have associated variations or action parameters)
       tags:
         - translations
       parameters:
@@ -2075,6 +2078,41 @@ paths:
           description: The response will be a list of Strings each one being a translation key 
 
 
+  /translations/{translationId}/multiKeys:
+    get:
+      summary: Returns information on all multi content keys of the translation resource.
+      description: |
+        Returns all the multi content translation keys from the translation resource specified. It will not return keys that do not
+        have associated variations or action parameters. 
+      tags:
+        - translations
+      parameters:
+        - "$ref" : "#/parameters/translationParam"
+      responses: 
+        200:
+          description: Information on all available keys
+          schema:
+            type: array
+            items:
+              "$ref": '#/definitions/MulticopyKeyInfoRepresentation'
+
+  /translations/{translationId}/multiKeys/{multiKeyId}:
+    get:
+      summary: Returns the copy information associated with the multi key
+      description: |
+        Returns the copy information associated with the multi key. The structure is always the same, independently of whether there
+        are random variations, action parameters or languages. In such cases the maps key uses a default value: 'default' for languages 
+        and random variations and "NO_PARAMETER" for action parameters
+      tags:
+        - translations
+      parameters:
+        - "$ref" : "#/parameters/translationParam"
+        - "$ref" : "#/parameters/multiKeyParam"
+      responses: 
+        200:
+          description: Information on all available keys
+          schema:
+            "$ref": '#/definitions/MulticopyKeyContentRepresentation'
 ##################################################################################
 #                       Definitions of type
 ##################################################################################
@@ -2086,6 +2124,7 @@ definitions:
 
   NameType:
     type: string
+    
     description: The unique name of the entity
 
   IdType:
@@ -2439,13 +2478,27 @@ definitions:
     type: string
 
 ### Client account types
-
-  ClientAccountCreationType:
+  ClientAccountReturnProperties:
+        type: object
+        description: Extra return properties for the client account  
+        required:
+          - awsSecretValueInfo
+          - awsAccessKeyValueInfo
+          - mandrillApiKeyValueInfo
+          - sendgridApiKeyValueInfo
+        properties:
+          awsSecretValueInfo:
+            $ref: '#/definitions/SecretValueType'
+          awsAccessKeyValueInfo:
+            $ref: '#/definitions/SecretValueType'
+          mandrillApiKeyValueInfo:
+            $ref: '#/definitions/SecretValueType'
+          sendgridApiKeyValueInfo:
+            $ref: '#/definitions/SecretValueType'
+ 
+  ClientAccountPopulationProperties:
         type: object
         description: A client (data tiger customer)  entry that stores the client specific settings.  
-        required:
-          - name
-          - email
         properties:
           name:
             type: string
@@ -2479,11 +2532,31 @@ definitions:
               AWS region that corresponds to the AWS key of the client's account. This is used by any actions that require to the client's
               customer's account (e.g. SNS Push action)
 
-  ClientAccountType:
-    description:  A client (data tiger customer)  entry that stores the client specific settings.  
+
+
+  ClientAccountTypePopulated:
+    description:  A client (data tiger customer)  entry that stores the client specific settings.
+    required:
+      - name
+      - email
     allOf:
-      - $ref: '#/definitions/ClientAccountCreationType'
+      - $ref: '#/definitions/ClientAccountReturnProperties'
+      - $ref: '#/definitions/ClientAccountPopulationProperties'
       - $ref: '#/definitions/ObjectWithIdType'
+
+  ClientAccountTypeForUpdate:
+    description:  A client (data tiger customer)  entry that stores the client specific settings.
+    allOf:
+      - $ref: '#/definitions/ClientAccountPopulationProperties'
+      - $ref: '#/definitions/ObjectWithIdType'
+
+  ClientAccountTypeForCreation:
+    description:  A client (data tiger customer)  entry that stores the client specific settings.
+    required:
+      - name
+      - email
+    allOf:
+      - $ref: '#/definitions/ClientAccountPopulationProperties'
 
 ### Auth types
   LoginRequestType:
@@ -2616,7 +2689,7 @@ definitions:
           The JSON that will be sent to SNS. The special strings ${action.snspush.message}, ${action.snspush.title}, ${action.snspush.image} and ${action.snspush.video}
           will be replaced with the relevant values from the SNS Push action definition (and if used in the template they will be required
           to not be null. As an example, the defauilt template is:        
-          '{ "default": "${action.snspush.message}", "APNS": "{\\"aps\\":{\\"alert\\": \"${action.snspush.message}\\"} }", "GCM":"{\\"data\\":{\\"message\\": \\"${action.snspush.message}\\"}}"}' 
+          { "default": "${action.snspush.message}", "APNS": "{\\"aps\\":{\\"alert\\": \"${action.snspush.message}\\"} }", "GCM":"{\\"data\\":{\\"message\\": \\"${action.snspush.message}\\"}}"} 
       
   PushTemplateType:
     type: object
@@ -2711,7 +2784,94 @@ definitions:
       - $ref: '#/definitions/ObjectWithIdType'
 
 
+  MulticopyKeyInfoRepresentation:
+    type: object
+    description: Multi key  metainformation. One or more of the following lists (languages, variations, actionParameters) will have >0 elements.
+    required:
+      - key
+      - languages
+      - variations
+      - actionParameters
+    properties:
+        key:
+          type: string
+          description: The key
+        languages:
+          type: array
+          items:
+            type: string
+          description: The list of available languages. If the key has no language mappings and empty list will be returned 
+        variations:
+          type: array
+          items:
+            type: string
+          description: The list of random variations. These are labeled according to the suffixes in the document. If no variations exist for this key an empty list will be returned.  
+        actionParameters:
+          type: array
+          description: The list of parameter types defined by this key. If the key has no associated action parameters an empty list will be returned 
+          items:
+            "$ref": '#/definitions/ActionParameterTypeEnum'
 
+  ActionParameterTypeEnum:
+    type: string
+    description: |
+      Represents a parameter of an action. At the moment it only covers SNS push action parameters. NO_PARAMETER is used when 
+      an action parameter type is required, but none is available   
+    enum:
+      - NO_PARAMETER
+      - ANDROID_TITLE
+      - ANDROID_MESSAGE
+      - ANDROID_IMAGE
+      - ANDROID_VIDEO
+      - IOS_TITLE
+      - IOS_MESSAGE
+      - IOS_IMAGE
+      - IOS_VIDEO
+
+
+  MulticopyKeyContentRepresentation:
+    type: object
+    description: Copies associated with the multi key
+    required:
+      - key
+      - content
+    properties:
+        key:
+          type: string
+          description: The key
+        content:
+          type: object
+          description: Map from the language (or 'default' if no language variations exist) to the per-variation content map
+          properties:
+            language:
+              "$ref": "#/definitions/MulticopyKeyContentPerVariation"
+          additionalProperties:
+              "$ref": "#/definitions/MulticopyKeyContentPerVariation"
+
+  MulticopyKeyContentPerVariation:
+    type: object
+    description: Copies per variation. If there is no random variations, 'default' string is used as the map key.
+    required:
+      - variation
+    properties:
+      variation:
+        "$ref": "#/definitions/MulticopyKeyContentPerAction"
+    additionalProperties:
+        "$ref": "#/definitions/MulticopyKeyContentPerAction"
+
+
+  MulticopyKeyContentPerAction:
+    type: object
+    description: Copy per action parameter. If no parameter is specified then 'NO_PARAMETER' will be used as the array key.
+    required:
+      - parameter
+    properties:
+      parameter:
+        type: string
+    additionalProperties:
+        type: string
+
+    
 ####ABTest types
 
   ABTestRefType:
@@ -3372,6 +3532,15 @@ definitions:
         type: string
 
 
+  SecretValueType:
+    description: |
+     Type of sensitive information value when returning results. 
+     EMPTY: The value is not populated. 
+     POPULATED: The value is populated but it is not returned
+     POPULATED_PREFIX: The value is populated and a sample prefix is returned     
+     POPULATED_SUFFIX: The value is populated and a sample suffix is returned     
+    type: string
+    enum: [EMPTY,POPULATED,POPULATED_PREFIX,POPULATED_SUFFIX]
 
 
   ISODateTimeType:
@@ -3516,7 +3685,13 @@ parameters:
         required: true
         type: string
         description: The identifier of the translation key id
-
+    multiKeyParam:
+        name: multiKeyId
+        in: path
+        required: true
+        type: string
+        description: The identifier of the multi key
+    
     workflowParam:
         name: workflow
         in: path

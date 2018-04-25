@@ -272,11 +272,14 @@ tags:
     description: Workflow step data
   - name: dev
     description: Integration tools for developers
+  - name: proxy
+    description: Proxy services for use by frontend environments
   
 
 x-tagGroups:
   - name: System calls
     tags:
+      - proxy
       - health
       - authentication
       - settings
@@ -299,6 +302,52 @@ x-tagGroups:
 
 
 paths:
+
+  /proxy/sendgridTemplates:
+    get:
+      summary: Returns a list of the sendgrid templates according to the sendgrid settings under the user's client account.
+      description: |
+        Returns a list of the sendgrid templates according to the sendgrid settings under the user's client account.
+        The response is exactly the same as that of sendgrid
+      tags:
+        - proxy
+      operationId: getSendgridTemplates
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The sendgrid templates
+        401:
+          description: User authetnication failed
+          schema:
+            "$ref": "#/definitions/GetEventsResponse"
+        403:
+          description: Sendgrid authetnication failed
+          schema:
+            "$ref": "#/definitions/GetEventsResponse"
+
+  /proxy/mandrillTemplates:
+    get:
+      summary: Returns a list of the mandrill templates according to the mandrill settings under the user's client account.
+      description: |
+        Returns a list of the mandrill templates according to the mandrill settings under the user's client account.
+        The response is exactly the same as that of mandrill
+      tags:
+        - proxy
+      operationId: getMandrilTemplates
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The mandrill templates
+        401:
+          description: User authetnication failed
+          schema:
+            "$ref": "#/definitions/GetEventsResponse"
+        403:
+          description: Mandrill authetnication failed
+          schema:
+            "$ref": "#/definitions/GetEventsResponse"
 
   /dev/events:
     get:
@@ -1984,49 +2033,6 @@ paths:
 
 
 ## Translations Info
-
-  /translations/{translationId}/keys/{translationKeyId}:
-    get:
-      summary: Returns all the translations.
-      description: |
-        Returns all the translations from the translation key located in the translation resource specified.
-      tags:
-        - translations
-      parameters:
-        - "$ref" : "#/parameters/translationParam"
-        - "$ref" : "#/parameters/translationKeyParam"
-      responses: 
-        200:
-          description: The response will contain a map language -> content
-
-  /translations/{translationId}/languages:
-    get:
-      summary: Returns all the languages available 
-      description: |
-        Returns all the languages available for the specified translation resource. If the resource contains no languages, 
-        an empty list will be returned. This can be in the case where a spreadsheet is used for randomization/action population
-        but no translation.
-      tags:
-        - translations  
-      parameters:
-        - "$ref" : "#/parameters/translationParam"
-      responses: 
-        200:
-          description: The response will be a list of Strings each one being a language available
-
-  /translations/{translationId}/keys:
-    get:
-      summary: Returns all the keys available
-      description: |
-        Returns all the translation keys from the translation resource specified. It will not return keys that are used for multi-content 
-        (keys that have associated variations or action parameters)
-      tags:
-        - translations
-      parameters:
-        - "$ref" : "#/parameters/translationParam"
-      responses: 
-        200:
-          description: The response will be a list of Strings each one being a translation key 
 
 
   /translations/{translationId}/multiKeys:

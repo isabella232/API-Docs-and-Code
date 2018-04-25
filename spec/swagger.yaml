@@ -2634,6 +2634,18 @@ definitions:
         enum:
           - IOS
           - ANDROID
+      type:
+        type: string
+        description: |
+          The type of the template. This must be consistent with the definition (e.g. for TEXT_WITH_IMAGE the definition must include 
+          fields action.snspush.image and action.snspush.message (no more or less fields)
+        enum:
+          - TEXT
+          - TEXT_WITH_TITLE
+          - TEXT_WITH_IMAGE
+          - TEXT_WITH_TITLE_AND_IMAGE
+          - TEXT_WITH_VIDEO
+          - TEXT_WITH_TITLE_AND_VIDEO
       definition:
         type: string
         description: |

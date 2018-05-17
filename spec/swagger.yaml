@@ -3070,6 +3070,9 @@ definitions:
             type: number
             format: int32
             description: Number of retries before permanent failure
+          responseType:
+            $ref: "#/definitions/AttributeType"
+            description: "Defines the type of the webhook's response"
           params:
             type: object
             description: |

@@ -3091,14 +3091,19 @@ definitions:
   
   SNS_PUSH_ACTION:
     description: |
+      iosEnabled and androidEnabled must always be specified and at least one must be not null.
       An action for sending Push notifications using Amazon SNS. There are two modes, manual and multikey.
-      In manual mode, at least one of the androidTemplateId or the iosTemplateId must be defined. If a template is defined, then the corresponding
+      In manual mode, there must be an androidTemplateId/iosTemplateId corresponding to the enabled 
+      platforms. If a template is defined, then the corresponding
       message must also be provided as well as all other fields that are required by the template. In multikey mode all of 
-      translationId, multiKey, multiKeyIosEnabled, multiKeyAndroidEnabled must be specified. 
+      translationId and multiKey. 
     allOf:
       - $ref : '#/definitions/WorkflowStepType'
       - $ref : '#/definitions/ActionStepType'
       - type: object
+        required:
+          - iosEnabled
+          - androidEnabled
         properties:
           androidTemplateId:
             type: string
@@ -3136,10 +3141,10 @@ definitions:
           multiKey:           
             type: string
             description: The multicopy key
-          multiKeyIosEnabled:
+          iosEnabled:
             type: boolean
             description: Whether multikey IOS push is enabled. This can only be true if the multikey content contains IOS content. Otherwise it should be false.
-          multiKeyAndroidEnabled:
+          androidEnabled:
             type: string
             description: Whether multikey Android push is enabled. This can only be true if the multikey content contains Android content. Otherwise it should be false.
           

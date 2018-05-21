@@ -3277,7 +3277,7 @@ definitions:
           duration:
             type: number
             format: int32
-            description: The amount of time units to wait
+            description: The amount of time units to wait, required if waitMode is WAIT_FOR
           timeUnit:
             type: string
             enum:
@@ -3285,10 +3285,16 @@ definitions:
               - DAYS
               - WEEKS
               - MONTHS
-            description: Specifies the time unit
-        required:
-          - duration
-          - timeUnit
+            description: Specifies the time unit, required if waitMode is WAIT_FOR
+          waitMode:
+            type: string
+            enum:
+              - WAIT_FOR
+              - WAIT_UNTIL
+              - WAIT_UNTIL_MORNING
+          waitUntil:
+              $ref: '#/definitions/ISODateTimeType'
+              description: Specifies the time to wait until, required if waitMode is WAIT_UNTIL
 
   SNS_SMS:
     description: Sends a SMS through Amazon's SNS service

@@ -2635,11 +2635,8 @@ definitions:
         type: number
         description: the accociated application
       platform:
-        type: string
         description: The platform to which this template applies
-        enum:
-          - IOS
-          - ANDROID
+        "$ref": '#/definitions/MobilePlatformType'
       type:
         type: string
         description: |
@@ -2761,6 +2758,7 @@ definitions:
       - languages
       - variations
       - actionParameters
+      - platforms
     properties:
         key:
           type: string
@@ -2775,6 +2773,11 @@ definitions:
           items:
             type: string
           description: The list of random variations. These are labeled according to the suffixes in the document. If no variations exist for this key an empty list will be returned.  
+        platforms:
+          description: The list supported platforms  
+          type: array
+          items:
+            "$ref": '#/definitions/MobilePlatformType'
         actionParameters:
           type: array
           description: The list of parameter types defined by this key. If the key has no associated action parameters an empty list will be returned 
@@ -3141,6 +3144,13 @@ definitions:
           multiKey:           
             type: string
             description: The multicopy key
+          variationProperty:
+            type: string
+            description: |
+              A string that should match the multicopy's property variations. This action parameter can only be not null if
+              the multikey has property variations. It can contain (and should most proably do) escapes such as ${user.userProperty} or ${event.eventProperty}.
+              An exact string match of the resolve value of this string and the multikey property variation is required
+              for succesfull action execution.
           iosEnabled:
             type: boolean
             description: Whether multikey IOS push is enabled. This can only be true if the multikey content contains IOS content. Otherwise it should be false.
@@ -3540,6 +3550,12 @@ definitions:
     type: string
     format: date-time
 
+
+  MobilePlatformType:
+    description: The type of a mobile platform
+    type: string
+    enum: [IOS, ANDROID]
+    
   TimeUnitType:
     description: TimeUnit
     type: string

@@ -2773,11 +2773,16 @@ definitions:
           items:
             type: string
           description: The list of random variations. These are labeled according to the suffixes in the document. If no variations exist for this key an empty list will be returned.  
-        platforms:
+        mobilePlatforms:
           description: The list supported platforms  
           type: array
           items:
             "$ref": '#/definitions/MobilePlatformType'
+        variationsType:
+          description: The type of variations, if there are variations (otherwise null)  
+          type: string
+          enum: [RANDOM, PROPERTY]
+                        
         actionParameters:
           type: array
           description: The list of parameter types defined by this key. If the key has no associated action parameters an empty list will be returned 

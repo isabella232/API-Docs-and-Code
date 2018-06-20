@@ -256,7 +256,7 @@ info:
     * $default should be the header of all content when there are no language translations (either $default or language headers are allowed, but not both)
     * $randomVariation column, if specified, allows multiple values for the same key. One of them will be selected at random for each action execution
     * $propertyVariation column, if specified, also allows multiple values for the same key. The variation that exactly matches a user/event property specified in the action step.
-    * $fieldType allows auto-filling of actions. At the moment it supported (and required) for SNS Push action. It specifies the action field to which the content corresponds. Allowed values are:
+    * $fieldType allows auto-filling of actions. At the moment it is supported (and required) for SNS Push actions. It specifies the action field to which the content corresponds. Allowed values are:
       * androidTitle
       * androidMessage
       * androidImage
@@ -265,7 +265,7 @@ info:
       * iosMessage
       * iosImage
       * iosVideo
-    * $templateType is requires for SNS Push actions and should be the type of template to use. Available values are:
+    * $templateType is required for SNS Push actions and should specify the type of template to use. Available values are:
       * TEXT
       * TEXT_WITH_TITLE
       * TEXT_WITH_IMAGE

@@ -233,9 +233,10 @@ info:
     ```     
      
     
-    ##Spreadsheets
-    The content of multicopy/multilanguage actions is specified in external 'content sources'. Currently, only google spreadsheets with
-    public links are supported. Here is an example of the supported content: https://docs.google.com/spreadsheets/d/1UMz7VSfe27JvGy0Lx8hWp4IhEZz-t9tW5KLKx3FbnME
+    ## Spreadsheets
+    The content of multicopy/multilanguage actions is specified in external 'content sources'. Here is an example of the supported content: https://docs.google.com/spreadsheets/d/1UMz7VSfe27JvGy0Lx8hWp4IhEZz-t9tW5KLKx3FbnME
+    
+    Currently, only google spreadsheets with public links are supported (it's important to set the spreadsheet sharing to public, where everyone with the link can view it) 
 
     The spreadsheets can be used in the system by first adding them using the 'translations/' API. Each entry will refer to exactly one
     sheet (tab) within a spreadsheet.
@@ -250,27 +251,28 @@ info:
     
     The structure of the spreadsheet is as follows:
     * The 1st row is reserved for headers understood by datatiger
-    * The leftmost column, or the one with the special header "$key" contains keys that identify the content. If a row has no key, the row is ignored.
+    * The leftmost column, or the one with the special header "$key", contains keys that identify the content. If a row has no key, the row is ignored.
     * 1st row headers that do not start with '$' are considered to be languages (e.g 'EN', 'ES', 'GR' etc)
     * $default should be the header of all content when there are no language translations (either $default or language headers are allowed, but not both)
-    * $randomVariation column, if specified, allows multiple values for the same key. On of them will be selected at random for each action execution
+    * $randomVariation column, if specified, allows multiple values for the same key. One of them will be selected at random for each action execution
     * $propertyVariation column, if specified, also allows multiple values for the same key. The variation that exactly matches a user/event property specified in the action step.
     * $fieldType allows auto-filling of actions. At the moment it supported (and required) for SNS Push action. It specifies the action field to which the content corresponds. Allowed values are:
-    ** androidTitle
-    ** androidMessage
-    ** androidImage
-    ** androidVideo
-    ** iosTitle
-    ** iosMessage
-    ** iosImage
-    ** iosVideo
+      * androidTitle
+      * androidMessage
+      * androidImage
+      * androidVideo
+      * iosTitle
+      * iosMessage
+      * iosImage
+      * iosVideo
     * $templateType is requires for SNS Push actions and should be the type of template to use. Available values are:
-    ** TEXT
-    ** TEXT_WITH_TITLE
-    ** TEXT_WITH_IMAGE
-    ** TEXT_WITH_TITLE_AND_IMAGE(
-    ** TEXT_WITH_VIDEO
-    ** TEXT_WITH_TITLE_AND_VIDEO
+      * TEXT
+      * TEXT_WITH_TITLE
+      * TEXT_WITH_IMAGE
+      * TEXT_WITH_TITLE_AND_IMAGE(
+      * TEXT_WITH_VIDEO
+      * TEXT_WITH_TITLE_AND_VIDEO
+    * Multiple consistency checks are performed when the spreadsheets are loaded, but generally they should be both internally consistent and consistent with the actions they are used for.
       
     
     

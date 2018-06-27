@@ -233,6 +233,48 @@ info:
     ```     
      
     
+    ## Spreadsheets
+    The content of multicopy/multilanguage actions is specified in external 'content sources'. Here is an example of the supported content: https://docs.google.com/spreadsheets/d/1UMz7VSfe27JvGy0Lx8hWp4IhEZz-t9tW5KLKx3FbnME
+    
+    Currently, only google spreadsheets with public links are supported (it's important to set the spreadsheet sharing to public, where everyone with the link can view it) 
+
+    The spreadsheets can be used in the system by first adding them using the 'translations/' API. Each entry will refer to exactly one
+    sheet (tab) within a spreadsheet.
+    
+    The general concept is that they associate keys with content.
+    
+    The supported features are:
+    * content translation
+    * action properties pre-population
+    * random content variations
+    * dynamic content variations (as opposed to random, the variation is choosen using a user/event property value)
+    
+    The structure of the spreadsheet is as follows:
+    * The 1st row is reserved for headers understood by datatiger
+    * The leftmost column, or the one with the special header "$key", contains keys that identify the content. If a row has no key, the row is ignored.
+    * 1st row headers that do not start with '$' are considered to be languages (e.g 'EN', 'ES', 'GR' etc)
+    * $default should be the header of all content when there are no language translations (either $default or language headers are allowed, but not both)
+    * $randomVariation column, if specified, allows multiple values for the same key. One of them will be selected at random for each action execution
+    * $propertyVariation column, if specified, also allows multiple values for the same key. The variation that exactly matches a user/event property specified in the action step.
+    * $fieldType allows auto-filling of actions. At the moment it is supported (and required) for SNS Push actions. It specifies the action field to which the content corresponds. Allowed values are:
+      * androidTitle
+      * androidMessage
+      * androidImage
+      * androidVideo
+      * iosTitle
+      * iosMessage
+      * iosImage
+      * iosVideo
+    * $templateType is required for SNS Push actions and should specify the type of template to use. Available values are:
+      * TEXT
+      * TEXT_WITH_TITLE
+      * TEXT_WITH_IMAGE
+      * TEXT_WITH_TITLE_AND_IMAGE(
+      * TEXT_WITH_VIDEO
+      * TEXT_WITH_TITLE_AND_VIDEO
+    * Multiple consistency checks are performed when the spreadsheets are loaded, but generally they should be both internally consistent and consistent with the actions they are used for.
+      
+    
     
     
     
@@ -2635,11 +2677,20 @@ definitions:
         type: number
         description: the accociated application
       platform:
-        type: string
         description: The platform to which this template applies
+        "$ref": '#/definitions/MobilePlatformType'
+      type:
+        type: string
+        description: |
+          The type of the template. This must be consistent with the definition (e.g. for TEXT_WITH_IMAGE the definition must include 
+          fields action.snspush.image and action.snspush.message (no more or less fields)
         enum:
-          - IOS
-          - ANDROID
+          - TEXT
+          - TEXT_WITH_TITLE
+          - TEXT_WITH_IMAGE
+          - TEXT_WITH_TITLE_AND_IMAGE
+          - TEXT_WITH_VIDEO
+          - TEXT_WITH_TITLE_AND_VIDEO
       definition:
         type: string
         description: |
@@ -2749,6 +2800,7 @@ definitions:
       - languages
       - variations
       - actionParameters
+      - platforms
     properties:
         key:
           type: string
@@ -2763,6 +2815,16 @@ definitions:
           items:
             type: string
           description: The list of random variations. These are labeled according to the suffixes in the document. If no variations exist for this key an empty list will be returned.  
+        mobilePlatforms:
+          description: The list supported platforms  
+          type: array
+          items:
+            "$ref": '#/definitions/MobilePlatformType'
+        variationsType:
+          description: The type of variations, if there are variations (otherwise null)  
+          type: string
+          enum: [RANDOM, PROPERTY]
+                        
         actionParameters:
           type: array
           description: The list of parameter types defined by this key. If the key has no associated action parameters an empty list will be returned 
@@ -3058,6 +3120,9 @@ definitions:
             type: number
             format: int32
             description: Number of retries before permanent failure
+          responseType:
+            $ref: "#/definitions/AttributeType"
+            description: "Defines the type of the webhook's response"
           params:
             type: object
             description: |
@@ -3076,19 +3141,20 @@ definitions:
   
   SNS_PUSH_ACTION:
     description: |
-      An action for sending Push notifications using Amazon SNS. At least one of the androidTemplateId or the iosTemplateId must be defined. If a template is defined, then the corresponding
-      token and message must also be provided as well as all other fields that are required by the template. 
+      iosEnabled and androidEnabled must always be specified and at least one must be not null.
+      An action for sending Push notifications using Amazon SNS. There are two modes, manual and multikey.
+      In manual mode, there must be an androidTemplateId/iosTemplateId corresponding to the enabled 
+      platforms. If a template is defined, then the corresponding
+      message must also be provided as well as all other fields that are required by the template. In multikey mode all of 
+      translationId and multiKey. 
     allOf:
       - $ref : '#/definitions/WorkflowStepType'
       - $ref : '#/definitions/ActionStepType'
       - type: object
+        required:
+          - iosEnabled
+          - androidEnabled
         properties:
-          androidRegistrationId:
-            type: string
-            description: The GCM registration id for the user. This will normally be filled with an expression pointint to a user property that contains the registration id.
-          iosDeviceToken:
-            type: string
-            description: The IOS device token for the user. This will normally be filled with an expression pointing to a user property that contains the device token.
           androidTemplateId:
             type: string
             description: The SNS Push template to be used for android pushes
@@ -3119,7 +3185,26 @@ definitions:
           iosVideoURL:           
             type: string
             description: The URL of the IOS message video
-  
+          translationId:           
+            type: number
+            description: The id of a content resource that contains multicopy data.
+          multiKey:           
+            type: string
+            description: The multicopy key
+          variationProperty:
+            type: string
+            description: |
+              A string that should match the multicopy's property variations. This action parameter can only be not null if
+              the multikey has property variations. It can contain (and should most proably do) escapes such as ${user.userProperty} or ${event.eventProperty}.
+              An exact string match of the resolve value of this string and the multikey property variation is required
+              for succesfull action execution.
+          iosEnabled:
+            type: boolean
+            description: Whether multikey IOS push is enabled. This can only be true if the multikey content contains IOS content. Otherwise it should be false.
+          androidEnabled:
+            type: string
+            description: Whether multikey Android push is enabled. This can only be true if the multikey content contains Android content. Otherwise it should be false.
+          
   
   SENDGRID_EMAIL_ACTION:
     description: |
@@ -3249,7 +3334,7 @@ definitions:
           duration:
             type: number
             format: int32
-            description: The amount of time units to wait
+            description: The amount of time units to wait, required if waitMode is WAIT_FOR
           timeUnit:
             type: string
             enum:
@@ -3257,10 +3342,16 @@ definitions:
               - DAYS
               - WEEKS
               - MONTHS
-            description: Specifies the time unit
-        required:
-          - duration
-          - timeUnit
+            description: Specifies the time unit, required if waitMode is WAIT_FOR
+          waitMode:
+            type: string
+            enum:
+              - WAIT_FOR
+              - WAIT_UNTIL
+              - WAIT_UNTIL_MORNING
+          waitUntil:
+              $ref: '#/definitions/ISODateTimeType'
+              description: Specifies the time to wait until, required if waitMode is WAIT_UNTIL
 
   SNS_SMS:
     description: Sends a SMS through Amazon's SNS service
@@ -3506,6 +3597,12 @@ definitions:
     type: string
     format: date-time
 
+
+  MobilePlatformType:
+    description: The type of a mobile platform
+    type: string
+    enum: [IOS, ANDROID]
+    
   TimeUnitType:
     description: TimeUnit
     type: string

@@ -122,7 +122,50 @@ info:
     ```
       user.LastActiveOn in the last 1 DAYS AND event.eventType == 'UserUpdated'
     ```
-    
+    #### Supported values for predefined user fields
+    At the moment certain user fields support a fixed set of values. Expressions are guaranteed to work only if they compare
+    against the following exact values
+    * user.TimezoneOffset
+          * −12
+          * −11
+          * −10
+          * −09:30
+          * −9
+          * −8
+          * -7
+          * -6
+          * -5
+          * -4
+          * −03:30
+          * -3
+          * -2
+          * -1
+          * +0
+          * +1
+          * +2
+          * +3
+          * +03:30
+          * +4
+          * +04:30
+          * +5
+          * +05:30
+          * +05:45
+          * +6
+          * +06:30
+          * +7
+          * +8
+          * +08:45
+          * +9
+          * +09:45
+          * +10
+          * +10:30
+          * +11
+          * +12
+          * +12:45
+          * +13
+          * +14
+    *  Language: ISO 639-1 standard. E.g. 'en', 'es' etc. 
+    *  Country: ISO 3166-1 alpha-2 standard. E.g. 'GB', 'US' etc. 
     
     ### Workflow steps
     The workflow steps define what happens after a workflow is activated as a graph of nodes. All nodes share a set of common attributes:

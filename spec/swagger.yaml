@@ -107,7 +107,7 @@ info:
     * AND, OR and NOT operators
     * parentheses
     * user and event properties such as 'user.UserId' or 'event.EventType'
-    * Operators: One of ==, >, <, >=, <= 
+    * Operators: One of ==, ~ (case insensitive string equality), >, <, >=, <=, !=, in the last, not in the last, in the next, not in the next, is empty, is not empty, ends with, starts with, contains  
     * Literals
       * Strings: 'strings are enclosed in single quotes'
       * DateTime: '2011-12-03T10:15:30'. The dateTimes are always expressed in UTC

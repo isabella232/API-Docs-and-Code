@@ -176,11 +176,11 @@ info:
         {
             "name": "Example Email Workflow",
             "applicationId": 10000,        
-            "triggerExpression": "event.EventType == 'DemoEmailSend'",
             "version": {
               "id": 12345,
               "name": "Welcome Flow",
               "status": "ACTIVE",
+              "triggerExpression": "event.EventType == 'DemoEmailSend'",
               "steps": [
                  {
                       "id": "START",
@@ -2983,7 +2983,6 @@ definitions:
         required:
           - applicationId      
           - name
-          - triggerExpression
           - version            
         properties:
             name:
@@ -2992,8 +2991,6 @@ definitions:
                 "$ref": "#/definitions/IdType"
             version:
                 "$ref": "#/definitions/WorkflowVersionType"
-            triggerExpression:
-                "$ref" : "#/definitions/ExpressionType"
 
   NonVersionedWorkflowProperties:
     type: object
@@ -3002,14 +2999,11 @@ definitions:
     required:
             - applicationId            
             - name
-            - triggerExpression          
     properties:
         name:
             "$ref" : "#/definitions/NameType"
         applicationId:
             "$ref": "#/definitions/IdType"
-        triggerExpression:
-            "$ref" : "#/definitions/ExpressionType"
 
   UpdateWorkflowType:
         type: object
@@ -3035,6 +3029,7 @@ definitions:
                 - name
                 - status
                 - steps
+                - triggerExpression
         properties:
             name:
                 "$ref" : "#/definitions/NameType"
@@ -3048,6 +3043,13 @@ definitions:
                 "$ref" : "#/definitions/WorkflowControlGroupSize"
             workflowControlGroupSeed:
                 "$ref" : "#/definitions/WorkflowControlGroupSeed"
+            testMode:
+              type: boolean
+              description: 
+                Indicates that trigger expression will be triggered only for test users configured for the specified
+                client. If it is not set, then it is set as false
+            triggerExpression:
+                "$ref" : "#/definitions/ExpressionType"
                 
             steps:
               type: array

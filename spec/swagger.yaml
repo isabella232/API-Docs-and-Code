@@ -3561,6 +3561,7 @@ definitions:
       groups:
         -
           step: Send_Email_Action
+          transition: ENTER
           values:
             -
               - '2017-09-01T11:00:00Z'
@@ -3568,16 +3569,44 @@ definitions:
             -
               - '2017-09-01T12:00:00Z'
               - 200
-
         -
-          step: START
+          step: Send_Email_Action
+          transition: OK
           values:
             -
               - '2017-09-01T11:00:00Z'
-              - 10
+              - 100
             -
               - '2017-09-01T12:00:00Z'
-              - 20
+              - 100
+        -
+          step: Send_Email_Action
+          transition: ERROR
+          values:
+            -
+              - '2017-09-01T12:00:00Z'
+              - 100
+
+        -
+          step: START
+          transition: OK
+          values:
+            -
+              - '2017-09-01T11:00:00Z'
+              - 100
+            -
+              - '2017-09-01T12:00:00Z'
+              - 200
+        -
+          step: END
+          transition: ENTER
+          values:
+            -
+              - '2017-09-01T11:00:00Z'
+              - 100
+            -
+              - '2017-09-01T12:00:00Z'
+              - 200
 
 
   GroupValuesType:

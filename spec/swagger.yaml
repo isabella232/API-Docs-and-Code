@@ -3029,7 +3029,7 @@ definitions:
   CreateWorkflowType:
         type: object
         description: |
-          Fully populated workflow information. If type is SEGMENT_BASED, scheduledAt must be provided.
+          Fully populated workflow information.
         required:
           - applicationId      
           - name
@@ -3041,12 +3041,8 @@ definitions:
                 "$ref": "#/definitions/IdType"
             version:
                 "$ref": "#/definitions/WorkflowVersionType"
-            triggerExpression:
-                "$ref" : "#/definitions/ExpressionType"
             type:
                 "$ref" : "#/definitions/WorkflowTypeEnum"
-            scheduledAt:
-                "$ref" : '#/definitions/ISODateTimeType'
 
   NonVersionedWorkflowProperties:
     type: object
@@ -3080,7 +3076,7 @@ definitions:
   WorkflowVersionType:
         type: object
         description: |
-          A version of a workflow.
+          A version of a workflow. If type of the Workflow is SEGMENT_BASED, scheduledAt must be provided.
         required:
                 - name
                 - status
@@ -3106,6 +3102,8 @@ definitions:
                 client. If it is not set, then it is set as false
             triggerExpression:
                 "$ref" : "#/definitions/ExpressionType"
+            scheduledAt:
+                "$ref" : '#/definitions/ISODateTimeType'
 
             steps:
               type: array

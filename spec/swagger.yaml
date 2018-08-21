@@ -107,7 +107,7 @@ info:
     * AND, OR and NOT operators
     * parentheses
     * user and event properties such as 'user.UserId' or 'event.EventType'
-    * Operators: One of ==, >, <, >=, <= 
+    * Operators: One of ==, ~ (case insensitive string equality), >, <, >=, <=, !=, in the last, not in the last, in the next, not in the next, is empty, is not empty, ends with, starts with, contains
     * Literals
       * Strings: 'strings are enclosed in single quotes'
       * DateTime: '2011-12-03T10:15:30'. The dateTimes are always expressed in UTC
@@ -122,7 +122,50 @@ info:
     ```
       user.LastActiveOn in the last 1 DAYS AND event.eventType == 'UserUpdated'
     ```
-    
+    #### Supported values for predefined user fields
+    At the moment certain user fields support a fixed set of values. Expressions are guaranteed to work only if they compare
+    against the following exact values
+    * user.TimezoneOffset
+          * −12
+          * −11
+          * −10
+          * −09:30
+          * −9
+          * −8
+          * -7
+          * -6
+          * -5
+          * -4
+          * −03:30
+          * -3
+          * -2
+          * -1
+          * +0
+          * +1
+          * +2
+          * +3
+          * +03:30
+          * +4
+          * +04:30
+          * +5
+          * +05:30
+          * +05:45
+          * +6
+          * +06:30
+          * +7
+          * +8
+          * +08:45
+          * +9
+          * +09:45
+          * +10
+          * +10:30
+          * +11
+          * +12
+          * +12:45
+          * +13
+          * +14
+    *  Language: ISO 639-1 standard. E.g. 'en', 'es' etc.
+    *  Country: ISO 3166-1 alpha-2 standard. E.g. 'GB', 'US' etc.
     
     ### Workflow steps
     The workflow steps define what happens after a workflow is activated as a graph of nodes. All nodes share a set of common attributes:
@@ -175,7 +218,7 @@ info:
      ```
         {
             "name": "Example Email Workflow",
-            "applicationId": 10000,        
+            "applicationId": 10000,
             "version": {
               "id": 12345,
               "name": "Welcome Flow",
@@ -2815,7 +2858,7 @@ definitions:
           items:
             type: string
           description: The list of random variations. These are labeled according to the suffixes in the document. If no variations exist for this key an empty list will be returned.  
-        mobilePlatforms:
+        platforms:
           description: The list supported platforms  
           type: array
           items:
@@ -2974,12 +3017,19 @@ definitions:
     type: string
     description: the name of the step. This is used to refer to the step within the workflow.
 
+  WorkflowTypeEnum:
+    type: string
+    description: Describes the type of a workflow
+    enum:
+      - SEGMENT_BASED
+      - EVENT_BASED
+
 ###### Workflow complex types
 
   CreateWorkflowType:
         type: object
         description: |
-          Fully populated workflow information.
+          Fully populated workflow information. If type is SEGMENT_BASED, scheduledAt must be provided.
         required:
           - applicationId      
           - name
@@ -2991,6 +3041,12 @@ definitions:
                 "$ref": "#/definitions/IdType"
             version:
                 "$ref": "#/definitions/WorkflowVersionType"
+            triggerExpression:
+                "$ref" : "#/definitions/ExpressionType"
+            type:
+                "$ref" : "#/definitions/WorkflowTypeEnum"
+            scheduledAt:
+                "$ref" : '#/definitions/ISODateTimeType'
 
   NonVersionedWorkflowProperties:
     type: object
@@ -3045,12 +3101,12 @@ definitions:
                 "$ref" : "#/definitions/WorkflowControlGroupSeed"
             testMode:
               type: boolean
-              description: 
+              description:
                 Indicates that trigger expression will be triggered only for test users configured for the specified
                 client. If it is not set, then it is set as false
             triggerExpression:
                 "$ref" : "#/definitions/ExpressionType"
-                
+
             steps:
               type: array
               description: |

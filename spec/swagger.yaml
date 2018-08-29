@@ -3615,11 +3615,11 @@ definitions:
     type: object
     properties:
       step:
+        description: StepId of the step that the statistic applies to
         type: string
-      workflowId:
-        type: number
-      versionId:
-        type: number
+      transition:
+        description: Step transition that the statistic applies to
+        type: string
       values:
         type: array
         items:

@@ -2076,6 +2076,38 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
+
+  /applications/{application}/workflows/{workflow}/versions/{version}/reporting/performance:
+
+    get:
+      summary: Returns metrics for the workflow version for a defined period.
+      description: |
+        Returns uplift analytics for the workflow version
+      tags:
+        - reporting
+
+      operationId: reportWorkflowAnalytics
+      parameters:
+        - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/workflowParam"
+        - "$ref": "#/parameters/versionParam"
+        - "$ref": "#/parameters/reportingFromFilter"
+        - "$ref": "#/parameters/reportingUntilFilter"
+        - "$ref": "#/parameters/reportingMetricsFilter"
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Most recent workflow version analytics.
+          schema:
+            $ref: '#/definitions/WorkflowStatisticsSummaryResponseType'
+        404:
+          description: The reference workflow/version could not be found.
+          schema:
+            $ref: '#/definitions/ErrorType'
+
 ## Steptpyes
 
   /stepdata/adwords/userlists:
@@ -3705,6 +3737,39 @@ definitions:
           Contains a list of event attributes that were included in the input event
           but are not included in the declaration of this event type in the user data schema.
 
+  WorkflowStatisticsSummaryResponseType:
+    type: object
+    description: daily workflow statistics
+    properties:
+      request:
+        type: object
+        description: Returns the values used to return the response
+        properties:
+          workflowId:
+            type: number
+          workflowVersionId:
+            type: number
+          from:
+            type: string
+            description:  A ISO-8601 date that specifies the requested period. If it is not defined it returns statistics |
+                          of the last month
+            format: date
+          until:
+            type: string
+            description:  A ISO-8601 date that defines the requested perdiod
+            format: date
+          metrics:
+            type: array
+            description:  a list of returned metrics
+            items:
+              type: string
+              enum: [ActiveUsers, Sessions, Payers, Revenue, RetentionDay_00, RetentionDay_01, RetentionDay_02, RetentionDay_07, RetentionDay_14, RetentionDay_30]
+      dailyStatistics:
+        type: array
+        items:
+          $ref: '#/definitions/DailyWorkflowStatistics'
+        description: an array of daily statistics
+
 
   ConversionErrorType:
     type: object
@@ -3747,6 +3812,83 @@ definitions:
             $ref: '#/definitions/ISODateTimeType'
           endTime:
             $ref: '#/definitions/ISODateTimeType'
+
+  DailyWorkflowStatistics:
+    type: object
+    properties:
+      calculatedOn:
+        type: string
+        description:  A ISO-8601 date that specifies the
+        format: date
+      populations:
+        type: object
+        description: map of available groups e.g. control / test group or ab_test group defined on the workflow
+        properties:
+          CONTROL:
+            $ref: '#/definitions/WorkflowPopulationStatistics'
+            description: total population of control group
+          TEST:
+            $ref: '#/definitions/WorkflowPopulationStatistics'
+            description: total population of test group
+
+  WorkflowPopulationStatistics:
+    type: object
+    properties:
+      population:
+        type: number
+        description: |
+          In case of metrics such as DAUs this should be the population over the metric window (e.g. people affected last month). |
+          For retention metrics, it will most probably be people affected on the individual day.
+      usersAffected:
+        type: number
+        description: |
+          Unique users affected on the measurement day. This is the date in the workflowStatistics
+      totalPopulationMultiplier:
+        type: number
+        description: |
+          Multiplier to get the value as if it was for the total population. This should be used for normalising everything in the graphs. |
+          A good way to calculate that would be (Test population + Control population) / thisPopulation
+      metrics:
+        type: object
+        description: map of available metrics e.g. ActiveUsers, Sessions, Payers, Revenue, RetentionDay_00, etc
+        properties:
+          ActiveUsers:
+            $ref: '#/definitions/WorkflowMetricStatistics'
+          Sessions:
+            $ref: '#/definitions/WorkflowMetricStatistics'
+          Payers:
+            $ref: '#/definitions/WorkflowMetricStatistics'
+          Revenue:
+            $ref: '#/definitions/WorkflowMetricStatistics'
+          RetentionDay_00:
+            $ref: '#/definitions/WorkflowMetricStatistics'
+
+  WorkflowMetricStatistics:
+    type: object
+    properties:
+      value:
+        type: number
+        description: The value of the metrics for the associated population
+      projections:
+        type: object
+        description: a projected value based on one prediction model, currently supported PopulationsRatio
+        properties:
+          PopulationsRatio:
+            $ref: '#/definitions/WorkflowPredictionStatistics'
+
+  WorkflowPredictionStatistics:
+    type: object
+    properties:
+      predictedValue:
+        type: number
+      uplift:
+        type: number
+      confidence:
+        type: number
+
+
+
+
             
         
 ##################################################################################
@@ -4012,6 +4154,15 @@ parameters:
         description: A ISO-8601 date-time that specifies the cut-off point after which executions will not be reported
         type: string
         format: date-time
+        
+    reportingMetricsFilter:
+      name: metricsPrefix
+      in: query
+      required: false
+      type: string
+      enum: [Revenue,Payers,Sessions,ActiveUsers,RetentionDay_00,RetentionDay_01,RetentionDay_02,RetentionDay_07]
+      description: |
+        The metrics that are expected to return. It can be passed as prefix to return multple metrics e.g. 'Retention'
 
     reportingAggregationFilter:
       name: aggregation

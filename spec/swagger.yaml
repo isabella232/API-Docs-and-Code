@@ -2077,16 +2077,47 @@ paths:
             $ref: '#/definitions/ErrorType'
 
 
+  /applications/{application}/workflows/{workflow}/analytics/reporting:
+
+    get:
+      summary: Returns metrics for the workflow for a specified period.
+      description: |
+        Returns metrics for the workflow for a specified period.
+      tags:
+        - reporting
+
+      operationId: workflowAnalyticsReporting
+      parameters:
+        - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/workflowParam"
+        - "$ref": "#/parameters/reportingFromFilter"
+        - "$ref": "#/parameters/reportingUntilFilter"
+        - "$ref": "#/parameters/reportingMetricsFilter"
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Most recent workflow version analytics.
+          schema:
+            $ref: '#/definitions/WorkflowStatisticsSummaryResponseType'
+        404:
+          description: The reference workflow/version could not be found.
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+
   /applications/{application}/workflows/{workflow}/versions/{version}/analytics/reporting:
 
     get:
       summary: Returns metrics for the workflow version for a defined period.
       description: |
-        Returns uplift analytics for the workflow version
+        Returns metrics for the workflow version for a defined period.
       tags:
         - reporting
 
-      operationId: reportWorkflowAnalytics
+      operationId: workflowVersionAnalyticsReporting
       parameters:
         - "$ref": "#/parameters/applicationParam"
         - "$ref": "#/parameters/workflowParam"
@@ -2102,7 +2133,7 @@ paths:
         200:
           description: Most recent workflow version analytics.
           schema:
-            $ref: '#/definitions/WorkflowStatisticsSummaryResponseType'
+            $ref: '#/definitions/WorkflowVersionStatisticsSummaryResponseType'
         404:
           description: The reference workflow/version could not be found.
           schema:
@@ -3765,7 +3796,7 @@ definitions:
           Contains a list of event attributes that were included in the input event
           but are not included in the declaration of this event type in the user data schema.
 
-  WorkflowStatisticsSummaryResponseType:
+  WorkflowVersionStatisticsSummaryResponseType:
     type: object
     description: daily workflow statistics
     properties:
@@ -3776,6 +3807,37 @@ definitions:
           workflowId:
             type: number
           workflowVersionId:
+            type: number
+          from:
+            type: string
+            description:  A ISO-8601 date that specifies the requested period. If it is not defined it returns statistics |
+                          of the last month
+            format: date
+          until:
+            type: string
+            description:  A ISO-8601 date that defines the requested perdiod
+            format: date
+          metrics:
+            type: array
+            description:  a list of returned metrics
+            items:
+              type: string
+              enum: [ActiveUsers, Sessions, Payers, Revenue, RetentionDay_00, RetentionDay_01, RetentionDay_02, RetentionDay_07, RetentionDay_14, RetentionDay_30]
+      dailyStatistics:
+        type: array
+        items:
+          $ref: '#/definitions/DailyWorkflowStatistics'
+        description: an array of daily statistics
+
+  WorkflowStatisticsSummaryResponseType:
+    type: object
+    description: daily workflow statistics
+    properties:
+      request:
+        type: object
+        description: Returns the values used to return the response
+        properties:
+          workflowId:
             type: number
           from:
             type: string

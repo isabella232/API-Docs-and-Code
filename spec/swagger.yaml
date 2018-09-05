@@ -2077,7 +2077,7 @@ paths:
             $ref: '#/definitions/ErrorType'
 
 
-  /applications/{application}/workflows/{workflow}/versions/{version}/reporting/performance:
+  /applications/{application}/workflows/{workflow}/versions/{version}/analytics/reporting:
 
     get:
       summary: Returns metrics for the workflow version for a defined period.

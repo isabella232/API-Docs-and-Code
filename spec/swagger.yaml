@@ -2752,7 +2752,6 @@ definitions:
         type: number
         description: the accociated application
       platform:
-        description: The platform to which this template applies
         "$ref": '#/definitions/MobilePlatformType'
       type:
         type: string
@@ -4185,13 +4184,16 @@ parameters:
         format: date-time
         
     reportingMetricsFilter:
-      name: metricsPrefix
+      name: metrics
       in: query
       required: false
-      type: string
+      type: array
+      items:
+        type: string
       enum: [Revenue,Payers,Sessions,ActiveUsers,RetentionDay_00,RetentionDay_01,RetentionDay_02,RetentionDay_07]
       description: |
-        The metrics that are expected to return. It can be passed as prefix to return multple metrics e.g. 'Retention'
+        The metrics that are expected to return. It can be passed as prefix to return multple metrics e.g. 'Retention'.
+        It can accept multiple parameters e.g. metrics=Revenue&metrics=RetentionDay
 
     reportingAggregationFilter:
       name: aggregation

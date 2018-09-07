@@ -4250,6 +4250,7 @@ parameters:
       in: query
       required: false
       type: array
+      collectionFormat: multi
       items:
         type: string
       enum: [Revenue,Payers,Sessions,ActiveUsers,RetentionDay_00,RetentionDay_01,RetentionDay_02,RetentionDay_07]

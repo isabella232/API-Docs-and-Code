@@ -189,6 +189,8 @@ info:
     * SNS_PUSH_ACTION - Action for sending Push notifications using Amazon SNS
      Distinct node types require specific properties to define their actions. All these are defined in the workflow types below.
     * ADWORDS_REMARKETING_ACTION - An action that adds the user to a Google Adwords remarketing user list.
+    * TAG - Action that adds a tag to the user, can be used for segmentation or conditions later on.
+    * UNTAG - Action that removes a tag from the user
 
     Multiple action parameters can include dynamic content by using a notation such as ${user.Email}. Currently three types of dynamic content are supported:
     * ${user.userAttribute} is replaced by the value of the user attribute
@@ -3068,6 +3070,8 @@ definitions:
       - AB_SPLIT
       - SNS_SMS
       - ADWORDS_REMARKETING_ACTION
+      - TAG
+      - UNTAG
 
   ExpressionType:
     type: string
@@ -3500,6 +3504,32 @@ definitions:
               - WEEKS
               - MONTHS
             description: The max amount of time units to wait when looking for best time delivery. Required if waitMode is WAIT_BEST_TIME
+
+  TAG:
+    description: Adds a tag to the user 
+    allOf:
+      - $ref : '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          tagId:
+            type: number
+            description: Id of the tag to add to the user.
+        required:
+          - tagId
+
+  UNTAG:
+    description: Removes a tag to the user 
+    allOf:
+      - $ref : '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          tagId:
+            type: number
+            description: Id of the tag to remove from the user.
+        required:
+          - tagId
+
+
 
   SNS_SMS:
     description: Sends a SMS through Amazon's SNS service

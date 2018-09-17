@@ -347,6 +347,8 @@ tags:
     description: Management of settin gs
   - name: abtests
     description: Management of AB tests
+  - name: tags
+    description: Management of tags
   - name: workflows
     description: Management of workflows
   - name: reporting
@@ -378,6 +380,7 @@ x-tagGroups:
       - translations
       - workflows
       - abtests
+      - tags
       - reporting
       - stepdata
   - name: Data types

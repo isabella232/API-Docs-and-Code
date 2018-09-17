@@ -3449,10 +3449,19 @@ definitions:
       - $ref : '#/definitions/WorkflowStepType'
       - type: object
         properties:
+          waitMode:
+            type: string
+            enum:
+              - WAIT_FOR
+              - WAIT_UNTIL_USER_TIME
+              - WAIT_UNTIL_INSTANT
+              - WAIT_UNTIL_MORNING
+              - WAIT_CRON
+              - WAIT_BEST_TIME
           duration:
-            type: number
+            type: string
             format: int32
-            description: The amount of time units to wait, required if waitMode is WAIT_FOR
+            description: The amount of time units to wait, can be interpolated, so it can contain a string with format "${<attribute>}" to be substituted. Required if waitMode or bestTimeUnavailable is WAIT_FOR
           timeUnit:
             type: string
             enum:
@@ -3460,16 +3469,37 @@ definitions:
               - DAYS
               - WEEKS
               - MONTHS
-            description: Specifies the time unit, required if waitMode is WAIT_FOR
-          waitMode:
+            description: Specifies the time unit, can be interpolated, so it can contain a string with format "${<attribute>}" to be substituted. Required if waitMode or bestTimeUnavailable is WAIT_FOR
+          waitUntilUserTime:
+              $ref: '#/definitions/ISODateTimeType'
+              description: Specifies the time to wait until, can be interpolated, so it can contain a string with format "${<attribute>}" to be substituted. Required if waitMode or bestTimeUnavailable is WAIT_UNTIL_USER_TIME
+          waitUntilInstant:
+              $ref: '#/definitions/ISODateTimeType'
+              description: Specifies the time to wait until, can be interpolated, so it can contain a string with format "${<attribute>}" to be substituted. Required if waitMode or bestTimeUnavailable is WAIT_UNTIL_INSTANT
+          cronExpression:
+              type: string
+              description: Cron expresssion representing the wait delay. Has to be valid cron expression. required if waitMode or bestTimeUnavailable is WAIT_CRON
+          bestTimeUnavailable:
             type: string
             enum:
               - WAIT_FOR
-              - WAIT_UNTIL
+              - WAIT_UNTIL_USER_TIME
+              - WAIT_UNTIL_INSTANT
               - WAIT_UNTIL_MORNING
-          waitUntil:
-              $ref: '#/definitions/ISODateTimeType'
-              description: Specifies the time to wait until, required if waitMode is WAIT_UNTIL
+              - WAIT_CRON
+            description: Wait mode to be used in case best time delivery is not available for the user. Required if waitMode is WAIT_BEST_TIME
+          waitBestTimeMaxDelay:
+            type: string
+            format: int32
+            description: The max amount of time units to wait when looking for best time delivery. Required if waitMode is WAIT_BEST_TIME
+          waitBestTimeMaxDelayTimeUnit:
+            type: string
+            enum:
+              - HOURS
+              - DAYS
+              - WEEKS
+              - MONTHS
+            description: The max amount of time units to wait when looking for best time delivery. Required if waitMode is WAIT_BEST_TIME
 
   SNS_SMS:
     description: Sends a SMS through Amazon's SNS service

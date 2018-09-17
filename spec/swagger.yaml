@@ -1575,10 +1575,129 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
-
-
 ##################################################################################
-#                       Push templates
+#                                       Tags
+##################################################################################
+
+  /applications/{application}/tags/{tagId}:
+    parameters:
+      - "$ref": "#/parameters/applicationParam"
+      - "$ref": "#/parameters/tagParam"
+      - "$ref": "#/parameters/authParam"
+    get:
+      summary: Get a Tag
+      description: |
+        Return a tag, identified by the tag ID
+      tags:
+        - tags
+      operationId: getTag
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The tag
+          schema:
+             "$ref": '#/definitions/TagType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The application or tag does not exist
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+    delete:
+      summary: Deletes a tag
+      description: |
+        Deletes a tag
+      tags:
+        - tags
+      operationId: delete
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The AB test was deleted successfully
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+  /applications/{application}/tags/:
+    parameters:
+      - "$ref": "#/parameters/applicationParam"
+      - "$ref": "#/parameters/authParam"
+    get:
+      summary: Get all tags associated with the application
+      tags:
+        - tags
+      operationId: getTagsOfApplication
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The tags associated with the application
+          schema:
+            items:
+              "$ref": '#/definitions/TagType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The application or tag does not exist
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+    post:
+      summary: Create a new tag
+      tags:
+        - tags
+      operationId: createTag
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/TagType'
+      responses:
+        200:
+          description: The tags with the assigned Id
+          schema:
+            "$ref": '#/definitions/TagType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The application or tag does not exist
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+            
+##################################################################################
+#                                  Push templates
 ##################################################################################
   /applications/{application}/pushTemplates:
     parameters:
@@ -3051,6 +3170,19 @@ definitions:
         type: number
         format: int32
 
+  TagType:
+    type: object
+    properties:
+      name:
+        description: The name of the tag
+        type: string
+      id:
+        description: Identified of the tag
+        type: number
+        format: int32
+
+
+
 
 ### Workflow simple top level types
 
@@ -4244,6 +4376,15 @@ parameters:
       required: true
       type: string
       description: The id of the AB test
+
+### Tag parameters
+
+    tagParam:
+      name: tagId
+      in: path
+      required: true
+      type: number
+      description: The id of the tag
 
 
 ### Application specific parameters

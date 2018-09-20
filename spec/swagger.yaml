@@ -259,7 +259,7 @@ info:
                               "token": "%firstName%",
                               "value": "${user.FirstName}"
                           }
-                      ],home
+                      ],
                       "sandboxed": false
                   },
                   {
@@ -1838,7 +1838,50 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorType'
-      
+
+  /applications/{application}/workflows/status:
+    parameters:
+      - "$ref": "#/parameters/applicationParam"
+      - "$ref": "#/parameters/authParam"
+    get:
+      summary: Returns status of last executions of scheduled campaigns for the specified application
+      tags:
+        - workflows
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Most recent statuses of the workflow versions assigned to
+          schema:
+            "$ref": "#/definitions/WorkflowExecutionStatus"
+        400:
+          description: Malformed request
+          schema:
+            "$ref": '#/definitions/ErrorType'
+
+  /applications/{application}/workflows/{workflow}/versions/{version}/status:
+    parameters:
+      - "$ref": "#/parameters/applicationParam"
+      - "$ref": "#/parameters/workflowParam"
+      - "$ref": "#/parameters/versionParam"
+      - "$ref": "#/parameters/authParam"
+    get:
+      summary: Returns status of last scheduled executions of the specified workflow version
+      tags:
+        - workflows
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Most recent statuses of the workflow versions assigned to
+          schema:
+            "$ref": "#/definitions/WorkflowExecutionStatus"
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+
 
   /applications/{application}/workflows/actions/validate:
     parameters:
@@ -3272,6 +3315,33 @@ definitions:
     allOf:
       - $ref: '#/definitions/CreateWorkflowType'
       - $ref: '#/definitions/ObjectWithIdType'
+
+  WorkflowExecutionStatus:
+    description: Information about last time a scheduled workflow version was executed
+    properties:
+      workflowVersionId:
+        type: number
+      startTime:
+        $ref: '#/definitions/ISODateTimeType'
+        description: time at which execution of the scheduled campaign has started
+      endTime:
+        $ref: '#/definitions/ISODateTimeType'
+        description: time at which execution of the scheduled campaign has finished. Only available if execution status is FAILED or COMPLETED
+      estimatedCount:
+        type: number
+        description: Number of users expected to execute the workflow to
+      processedCount:
+        type: number
+        description: Number of users for which a workflow has already been executed
+      executionStatus:
+        type: string
+        enum:
+          - WAITING
+          - IN_PROGRESS
+          - FAILED
+          - COMPLETED
+
+
 
 
   WorkflowVersionType:

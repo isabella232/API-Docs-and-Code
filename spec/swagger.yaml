@@ -1783,7 +1783,7 @@ paths:
         - application/json
       responses:
         200:
-          description: The AB test was deleted successfully
+          description: The tag was deleted successfully
         400:
           description: Malformed request
           schema:

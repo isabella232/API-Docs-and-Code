@@ -1577,6 +1577,159 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorType'
+##################################################################################
+#                                       Segments
+    # GET     /applications/{application}/segments (com.datatiger.platform.api.resources.SegmentsResource) -
+    # POST    /applications/{application}/segments (com.datatiger.platform.api.resources.SegmentsResource) -
+
+    # '#/definitions/segmentType' -
+    # "#/parameters/segmentParam" -
+
+    # GET     /applications/{application}/segments/{segmentId} (com.datatiger.platform.api.resources.SegmentsResource) -
+    # DELETE  /applications/{application}/segments/{segmentId} (com.datatiger.platform.api.resources.SegmentsResource) -
+    # PUT     /applications/{application}/segments/{segmentId} (com.datatiger.platform.api.resources.SegmentsResource)
+##################################################################################
+
+  /applications/{application}/segments:
+    parameters:
+      - "$ref": "#/parameters/applicationParam"
+      - "$ref": "#/parameters/authParam"
+    get:
+      summary: Get all available segments for that application
+      tags:
+        - segments
+      operationId: getSegments
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The segments
+          schema:
+             "$ref": '#/definitions/SegmentType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The application does not exist
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+    post:
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/SegmentType'
+      summary: Create a new segment for that application
+      tags:
+        - segments
+      operationId: newSegment
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The segment with the assigned id
+          schema:
+             "$ref": '#/definitions/SegmentType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The application does not exist
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+  /applications/{application}/segments/{segmentId}:
+    parameters:
+      - "$ref": "#/parameters/applicationParam"
+      - "$ref": "#/parameters/authParam"
+      - "$ref": "#/parameters/segmentParam"
+    get:
+      summary: Get a specific segment
+      tags:
+        - segments
+      operationId: getSegment
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The segment
+          schema:
+             "$ref": '#/definitions/SegmentType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The application does not exist
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+    delete:
+      summary: delete a specific segment
+      tags:
+        - segments
+      operationId: deleteSegment
+      responses:
+        200:
+          description: The segment got deleted
+
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The application does not exist
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+    put:
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/SegmentType'
+      summary: Update segment for that application
+      tags:
+        - segments
+      operationId: updateSegment
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The updated segment
+          schema:
+             "$ref": '#/definitions/SegmentType'
+        400:
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        404:
+          description: The application does not exist
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
 
 ##################################################################################
 #                                       Tags
@@ -3223,7 +3376,21 @@ definitions:
         description: The name of the tag
         type: string
       id:
-        description: Identified of the tag
+        description: Identifier of the tag
+        type: number
+        format: int32
+  
+  SegmentType:
+    type: object
+    properties:
+      name:
+        description: The name of the segment
+        type: string
+      expression:
+        description: The expression assigned to the segment
+        type: string
+      id:
+        description: Identifier of the segment
         type: number
         format: int32
 
@@ -4458,6 +4625,15 @@ parameters:
       required: true
       type: number
       description: The id of the tag
+
+
+### Segment parameters
+    segmentParam:
+      name: segmentId
+      in: path
+      required: true
+      type: number
+      description: The id of the segment
 
 
 ### Application specific parameters

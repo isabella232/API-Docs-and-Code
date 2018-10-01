@@ -1608,7 +1608,9 @@ paths:
         200:
           description: The segments
           schema:
-             "$ref": '#/definitions/SegmentType'
+            type: array
+            items:
+              "$ref": '#/definitions/SegmentType'
         400:
           description: Malformed request
           schema:
@@ -1808,6 +1810,7 @@ paths:
         200:
           description: The tags associated with the application
           schema:
+            type: array
             items:
               "$ref": '#/definitions/TagType'
         400:

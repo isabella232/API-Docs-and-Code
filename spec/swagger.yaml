@@ -349,6 +349,8 @@ tags:
     description: Management of AB tests
   - name: tags
     description: Management of tags
+  - name: segments
+    description: Management of segments
   - name: workflows
     description: Management of workflows
   - name: reporting
@@ -381,6 +383,7 @@ x-tagGroups:
       - workflows
       - abtests
       - tags
+      - segments
       - reporting
       - stepdata
   - name: Data types

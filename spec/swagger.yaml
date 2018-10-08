@@ -2079,7 +2079,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorType'
-
+            
   /applications/{application}/workflows/{workflow}/versions:
     parameters:
         - "$ref": "#/parameters/applicationParam"
@@ -2433,6 +2433,52 @@ paths:
           schema:
             $ref: '#/definitions/ErrorType'
 
+  /applications/{application}/workflows/{workflow}/status-change:
+
+    get:
+      summary: Returns list of status changes for the specified workflow
+      tags:
+        - reporting
+
+      operationId: workflowStatusChanges
+      parameters:
+        - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/workflowParam"
+      produces:
+        - application/json
+      responses:
+        200:
+          description: All workflow status changes for the specified workflow
+          schema:
+            $ref: '#/definitions/WorkflowStatisticsSummaryResponseType'
+        404:
+          description: The reference workflow or application could not be found.
+          schema:
+            $ref: '#/definitions/ErrorType'
+
+  /applications/{application}/workflows/{workflow}/versions/{version}/status-change:
+
+    get:
+      summary: Returns list of status changes for the specified workflow version
+      tags:
+        - reporting
+
+      operationId: workflowVersionStatusChanges
+      parameters:
+        - "$ref": "#/parameters/applicationParam"
+        - "$ref": "#/parameters/workflowParam"
+        - "$ref": "#/parameters/versionParam"
+      produces:
+        - application/json
+      responses:
+        200:
+          description: All workflow status changes for the specified workflow version
+          schema:
+            $ref: '#/definitions/WorkflowStatisticsSummaryResponseType'
+        404:
+          description: The reference workflow or version or application could not be found.
+          schema:
+            $ref: '#/definitions/ErrorType'
 
   /applications/{application}/workflows/{workflow}/versions/{version}/analytics/reporting:
 

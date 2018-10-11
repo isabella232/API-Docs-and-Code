@@ -2419,6 +2419,7 @@ paths:
         - "$ref": "#/parameters/reportingFromFilter"
         - "$ref": "#/parameters/reportingUntilFilter"
         - "$ref": "#/parameters/reportingMetricsFilter"
+        - "$ref": "#/parameters/reportingDetailsFilter"
       consumes:
         - application/x-www-form-urlencoded
       produces:
@@ -2497,6 +2498,8 @@ paths:
         - "$ref": "#/parameters/reportingFromFilter"
         - "$ref": "#/parameters/reportingUntilFilter"
         - "$ref": "#/parameters/reportingMetricsFilter"
+        - "$ref": "#/parameters/reportingDetailsFilter"
+        
       consumes:
         - application/x-www-form-urlencoded
       produces:
@@ -4312,6 +4315,12 @@ definitions:
         items:
           $ref: '#/definitions/DailyWorkflowStatistics'
         description: an array of daily statistics
+      sums:
+        type: object
+        description: aggregation (sums) of the daily information. If request parameter 'details' was false, then only this object will be returned
+        properties:
+          periods:
+            $ref: '#/definitions/PeriodsWorkflowStatistics'
 
   WorkflowStatisticsSummaryResponseType:
     type: object
@@ -4343,6 +4352,12 @@ definitions:
         items:
           $ref: '#/definitions/DailyWorkflowStatistics'
         description: an array of daily statistics
+      sums:
+        type: object
+        description: aggregation (sums) of the daily information. If request parameter 'details' was false, then only this object will be returned
+        properties:
+          periods:
+            $ref: '#/definitions/PeriodsWorkflowStatistics'
 
 
   ConversionErrorType:
@@ -4387,6 +4402,27 @@ definitions:
           endTime:
             $ref: '#/definitions/ISODateTimeType'
 
+  PeriodsWorkflowStatistics:
+    type: object
+    description: |
+      The date window that define the population each metric is measuring. Typically, retention metrics use a 1 day window period while other 
+      metrics a 30 day window period.
+    properties:
+      "PRIOR_1_DAY":
+            $ref: '#/definitions/WorkflowPopulationSetStatistics'
+      "PRIOR_30_DAYS":
+            $ref: '#/definitions/WorkflowPopulationSetStatistics'
+    
+  WorkflowPopulationSetStatistics:
+    type: object
+    properties:
+          CONTROL:
+            $ref: '#/definitions/WorkflowPopulationStatistics'
+            description: total population of control group
+          TEST:
+            $ref: '#/definitions/WorkflowPopulationStatistics'
+            description: total population of test group
+  
   DailyWorkflowStatistics:
     type: object
     properties:
@@ -4394,16 +4430,8 @@ definitions:
         type: string
         description:  A ISO-8601 date that specifies the
         format: date
-      populations:
-        type: object
-        description: map of available groups e.g. control / test group or ab_test group defined on the workflow
-        properties:
-          CONTROL:
-            $ref: '#/definitions/WorkflowPopulationStatistics'
-            description: total population of control group
-          TEST:
-            $ref: '#/definitions/WorkflowPopulationStatistics'
-            description: total population of test group
+      periods:
+        $ref: '#/definitions/PeriodsWorkflowStatistics'
 
   WorkflowPopulationStatistics:
     type: object
@@ -4422,6 +4450,14 @@ definitions:
         description: |
           Multiplier to get the value as if it was for the total population. This should be used for normalising everything in the graphs. |
           A good way to calculate that would be (Test population + Control population) / thisPopulation
+      testGroup:
+        type: string
+        description: |
+          The test group of the AB test, if the population corresponds to an AB test. Otherwise it will be empty.
+      controlGroup:
+        type: boolean
+        description: |
+          True if the population corresponds to a workflow or AB group control group. False otherwise.
       metrics:
         type: object
         description: map of available metrics e.g. ActiveUsers, Sessions, Payers, Revenue, RetentionDay_00, etc
@@ -4434,7 +4470,9 @@ definitions:
             $ref: '#/definitions/WorkflowMetricStatistics'
           Revenue:
             $ref: '#/definitions/WorkflowMetricStatistics'
-          RetentionDay_00:
+          RetentionDay_1:
+            $ref: '#/definitions/WorkflowMetricStatistics'
+          RetentionDay_2:
             $ref: '#/definitions/WorkflowMetricStatistics'
 
   WorkflowMetricStatistics:
@@ -4449,6 +4487,18 @@ definitions:
         properties:
           PopulationsRatio:
             $ref: '#/definitions/WorkflowPredictionStatistics'
+      weightedSumOfValues:
+        type: number
+        description: Used only under 'sums' or other aggregations. It will be the weighted sum of all values for this metric.
+      population:
+        type: number
+        description:  Used only under 'sums' or other aggregations. It will be the population that corresponds to this metric.
+      usersAffected:
+        type: number
+        description: Used only under 'sums' or other aggregations. It will be the affected users that corresponds to this metric.
+      totalPopulationMultiplier:
+        type: number
+        description: Used only under 'sums' or other aggregations. It will be the population multiplier that corresponds to this metric.
 
   WorkflowPredictionStatistics:
     type: object
@@ -4459,6 +4509,9 @@ definitions:
         type: number
       confidence:
         type: number
+      weightedSumOfValues:
+        type: number
+        description: Used only under 'sums' or other aggregations. It will be the weighted sum of all values for this metric.
 
 
 
@@ -4747,6 +4800,16 @@ parameters:
         type: string
         format: date-time
         
+    reportingDetailsFilter:
+      name: details
+      in: query
+      required: false
+      type: boolean
+      default: true
+      description: |
+        If set to false, then only the aggregate values of the metrics are returned. This is very useful for displaying information such as the retention chart 
+        (where only the averages of a certain period are necessary).
+    
     reportingMetricsFilter:
       name: metrics
       in: query

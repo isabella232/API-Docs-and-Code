@@ -4515,8 +4515,10 @@ definitions:
         description: |
           the revant control group adjusted to the size of this test group. Therefore, predictedValue - controlScaledPredictedValue will give the uplift
           in absolute numbers. In case of AB tests, if there is no control group, the BE will choose the worst performing test group as the 
-          'control group'. 
-      weightedSumOfControlScaledPredictedValue: Used only under 'sums' or other aggregations. It will be the weighted sum of all controlScaledPredictedValue values.
+          control group. 
+      weightedSumOfControlScaledPredictedValue: 
+        type: number
+        description: Used only under 'sums' or other aggregations. It will be the weighted sum of all controlScaledPredictedValue values.
         
 ##################################################################################
 #                       PARAMETERS

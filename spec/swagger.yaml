@@ -365,7 +365,8 @@ tags:
     description: Integration tools for developers
   - name: proxy
     description: Proxy services for use by frontend environments
-  
+  - name: privacy
+    description: User privacy related requests
 
 x-tagGroups:
   - name: System calls
@@ -392,6 +393,9 @@ x-tagGroups:
   - name: Developer Tools 
     tags:
       - dev
+  - name: Privacy
+    tags:
+      - gdpr 
 
 
 paths:
@@ -2593,6 +2597,33 @@ paths:
           description: Information on all available keys
           schema:
             "$ref": '#/definitions/MulticopyKeyContentRepresentation'
+
+  /applications/{application}/gdpr:
+    post:
+      summary: Submits a user removal request 
+      description: |
+        This endpoint is used to submit requests for user removals in the context of the GDPR legislation. After a successfull submission the user data will be removed within a maximum time of 30 days.
+      tags:
+        - gdpr 
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - "$ref": "#/parameters/applicationParam"
+        - name: body
+          in: body
+          required: true
+          schema:
+            "$ref": '#/definitions/GdprUserRemovalRequest'
+      responses:
+        200:
+          description: The request has been recorded successfully
+        404:
+          description: The referenced application could not be found.
+          schema:
+            $ref: '#/definitions/ErrorType'
+
 ##################################################################################
 #                       Definitions of type
 ##################################################################################
@@ -4524,6 +4555,13 @@ definitions:
         type: number
         description: Used only under 'sums' or other aggregations. It will be the weighted sum of all controlScaledPredictedValue values.
         
+  GdprUserRemovalRequest:
+    type: object
+    properties:
+      userId:
+        type: string
+        description: the ID of the user to be removed 
+
 ##################################################################################
 #                       PARAMETERS
 ##################################################################################

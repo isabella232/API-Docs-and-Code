@@ -3225,7 +3225,11 @@ definitions:
     allOf:
       - $ref: '#/definitions/CreateApplicationType'
       - $ref: '#/definitions/ObjectWithIdType'
-
+      - type: object
+        properties:
+          supportsSNSPush:
+            type: boolean
+            description: True if application is setup for SNS pushes, false otherwise. If it's null/unspecified, the application may or may not be setup for SNS Pushes. 
 
 ### Translation resource type
 
